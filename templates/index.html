@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遥感影像分类系统</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/pages.css">
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>遥感影像分类</h1>
+                        <span>v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-label">导航</div>
+
+                <!-- Overview Nav Item -->
+                <div class="nav-item active" data-page="overview">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </div>
+                    <div class="nav-content">
+                        <div class="nav-title">系统总览</div>
+                        <div class="nav-desc">处理流程与状态</div>
+                    </div>
+                </div>
+
+                <!-- Collapsible Section: 阶段性处理 -->
+                <div class="nav-section-header" data-target="data-processing-section">
+                    <span class="nav-label" style="margin: 0; padding: 0;">阶段性处理</span>
+                    <svg class="nav-section-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="nav-section-content" id="data-processing-section">
+
+                    <!-- Step 1 -->
+                    <div class="nav-item" data-page="step1">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M3 9h18"/>
+                                <path d="M9 21V9"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">影像填充合并</div>
+                            <div class="nav-desc">步骤 1</div>
+                        </div>
+                        <span class="nav-badge">01</span>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="nav-item" data-page="step2">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v10"/>
+                                <path d="M1 12h6m6 0h10"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">样本进阶</div>
+                            <div class="nav-desc">步骤 2</div>
+                        </div>
+                        <span class="nav-badge">02</span>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="nav-item" data-page="step3">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 3h5v5"/>
+                                <path d="M8 21H3v-5"/>
+                                <path d="M21 3l-9 9"/>
+                                <path d="M3 21l9-9"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">汉明匹配</div>
+                            <div class="nav-desc">步骤 3</div>
+                        </div>
+                        <span class="nav-badge">03</span>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="nav-item" data-page="step4">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">ENVI转换</div>
+                            <div class="nav-desc">步骤 4</div>
+                        </div>
+                        <span class="nav-badge">04</span>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="nav-item" data-page="step5">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v18"/>
+                                <rect x="4" y="8" width="6" height="12" rx="1"/>
+                                <rect x="14" y="4" width="6" height="16" rx="1"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">重分类优化</div>
+                            <div class="nav-desc">步骤 5</div>
+                        </div>
+                        <span class="nav-badge">05</span>
+                    </div>
+
+                    <!-- Step 6 -->
+                    <div class="nav-item" data-page="step6">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">精度评价</div>
+                            <div class="nav-desc">步骤 6</div>
+                        </div>
+                        <span class="nav-badge">06</span>
+                    </div>
+                </div>
+
+                <!-- 全流程处理 -->
+                <div class="nav-section-header" data-target="full-flow-section" style="margin-top: 1.5rem;">
+                    <span class="nav-label" style="margin: 0; padding: 0;">全流程处理</span>
+                    <svg class="nav-section-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="nav-section-content" id="full-flow-section">
+                    <div class="nav-item" data-page="pipeline">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">一键全流程</div>
+                            <div class="nav-desc">步骤 1 → 6 串联</div>
+                        </div>
+                        <span class="nav-badge" style="background: var(--gradient-card); color: var(--accent);">ALL</span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>系统就绪</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Page -->
+            <div id="page-overview" class="page active">
+
+                <!-- ====== Hero ====== -->
+                <div class="hero">
+                    <div class="hero-bg-orbs">
+                        <div class="hero-orb hero-orb-1"></div>
+                        <div class="hero-orb hero-orb-2"></div>
+                        <div class="hero-orb hero-orb-3"></div>
+                    </div>
+                    <div class="hero-badge">Remote Sensing Classification</div>
+                    <h1 class="hero-title">遥感影像智能<br><span class="hero-title-accent">分类处理系统</span></h1>
+                    <p class="hero-desc">基于指纹光谱序列与汉明距离的多轮迭代匹配分类方案<br>6 步全流程 · 多轮自动优化 · 精度驱动终止</p>
+                    <div class="hero-actions">
+                        <button class="btn-hero-primary" onclick="navigateToPage('pipeline')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            启动全流程
+                        </button>
+                        <button class="btn-hero-ghost" onclick="navigateToPage('step1')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 5v14M5 12h14"/></svg>
+                            单步执行
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ====== 流程管线 ====== -->
+                <div class="pipeline-visual">
+                    <div class="pipeline-visual-track"></div>
+                    <div class="pipeline-visual-step" data-step="1" onclick="navigateToPage('step1')">
+                        <div class="pvs-dot" style="--dot-color: #14b8a6;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <div class="pvs-num">01</div>
+                        <div class="pvs-name">影像填充</div>
+                        <div class="pvs-tag">单次</div>
+                    </div>
+                    <div class="pipeline-visual-step" data-step="2" onclick="navigateToPage('step2')">
+                        <div class="pvs-dot" style="--dot-color: #22d3ee;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                        <div class="pvs-num">02</div>
+                        <div class="pvs-name">样本进阶</div>
+                        <div class="pvs-tag">单次</div>
+                    </div>
+                    <div class="pipeline-visual-step" data-step="3" onclick="navigateToPage('step3')">
+                        <div class="pvs-dot" style="--dot-color: #a855f7;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </div>
+                        <div class="pvs-num">03</div>
+                        <div class="pvs-name">汉明匹配</div>
+                        <div class="pvs-tag">迭代</div>
+                    </div>
+                    <div class="pipeline-visual-step" data-step="4" onclick="navigateToPage('step4')">
+                        <div class="pvs-dot" style="--dot-color: #3b82f6;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                        </div>
+                        <div class="pvs-num">04</div>
+                        <div class="pvs-name">ENVI转换</div>
+                        <div class="pvs-tag">迭代</div>
+                    </div>
+                    <div class="pipeline-visual-step" data-step="5" onclick="navigateToPage('step5')">
+                        <div class="pvs-dot" style="--dot-color: #eab308;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        </div>
+                        <div class="pvs-num">05</div>
+                        <div class="pvs-name">重分类</div>
+                        <div class="pvs-tag">迭代</div>
+                    </div>
+                    <div class="pipeline-visual-step" data-step="6" onclick="navigateToPage('step6')">
+                        <div class="pvs-dot" style="--dot-color: #22c55e;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div class="pvs-num">06</div>
+                        <div class="pvs-name">精度评价</div>
+                        <div class="pvs-tag">迭代</div>
+                    </div>
+                    <!-- 迭代回路标注 -->
+                    <div class="pipeline-loop-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                        步骤3-6 多轮迭代
+                    </div>
+                </div>
+
+                <!-- ====== 数据指标 ====== -->
+                <div class="overview-stats">
+                    <div class="ov-stat-card ov-stat-accent">
+                        <div class="ov-stat-header">
+                            <div class="ov-stat-icon" style="background: rgba(20,184,166,0.12); color: #14b8a6;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                            </div>
+                            <div class="ov-stat-trend up">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                            </div>
+                        </div>
+                        <div class="ov-stat-value">6</div>
+                        <div class="ov-stat-label">处理步骤</div>
+                        <div class="ov-stat-bar"><div class="ov-stat-bar-fill" style="width:100%; background: linear-gradient(90deg, #14b8a6, #22d3ee);"></div></div>
+                    </div>
+                    <div class="ov-stat-card">
+                        <div class="ov-stat-header">
+                            <div class="ov-stat-icon" style="background: rgba(168,85,247,0.12); color: #a855f7;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                            </div>
+                        </div>
+                        <div class="ov-stat-value">4</div>
+                        <div class="ov-stat-label">地物类别</div>
+                        <div class="ov-stat-bar"><div class="ov-stat-bar-fill" style="width:67%; background: linear-gradient(90deg, #a855f7, #c084fc);"></div></div>
+                        <div class="ov-stat-sub">水体 · 人工表面 · 林地 · 耕地</div>
+                    </div>
+                    <div class="ov-stat-card">
+                        <div class="ov-stat-header">
+                            <div class="ov-stat-icon" style="background: rgba(59,130,246,0.12); color: #3b82f6;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                        </div>
+                        <div class="ov-stat-value">实时</div>
+                        <div class="ov-stat-label">进度监控</div>
+                        <div class="ov-stat-bar"><div class="ov-stat-bar-fill" style="width:85%; background: linear-gradient(90deg, #3b82f6, #60a5fa);"></div></div>
+                        <div class="ov-stat-sub">轮次级 · 步骤级双维度</div>
+                    </div>
+                    <div class="ov-stat-card">
+                        <div class="ov-stat-header">
+                            <div class="ov-stat-icon" style="background: rgba(34,197,94,0.12); color: #22c55e;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                        </div>
+                        <div class="ov-stat-value">自动</div>
+                        <div class="ov-stat-label">分类优化</div>
+                        <div class="ov-stat-bar"><div class="ov-stat-bar-fill" style="width:92%; background: linear-gradient(90deg, #22c55e, #4ade80);"></div></div>
+                        <div class="ov-stat-sub">Kappa≥0.8 或 未分类≥10%</div>
+                    </div>
+                </div>
+
+                <!-- ====== 核心特性 + 技术架构 ====== -->
+                <div class="overview-dual">
+                    <!-- 核心特性 -->
+                    <div class="card overview-features-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                核心特性
+                            </h3>
+                        </div>
+                        <div class="ov-features-list">
+                            <div class="ov-feature-item">
+                                <div class="ov-feature-icon" style="background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(34,211,238,0.05));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                </div>
+                                <div class="ov-feature-body">
+                                    <div class="ov-feature-title">指纹光谱序列</div>
+                                    <div class="ov-feature-desc">多光谱影像→指纹光谱序列，零值处理+分位数分类，保留空间信息</div>
+                                </div>
+                            </div>
+                            <div class="ov-feature-item">
+                                <div class="ov-feature-icon" style="background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(192,132,252,0.05));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
+                                </div>
+                                <div class="ov-feature-body">
+                                    <div class="ov-feature-title">汉明距离匹配</div>
+                                    <div class="ov-feature-desc">多轮最近邻匹配，差异性驱动优先处理易混淆类别，阈值自动递增</div>
+                                </div>
+                            </div>
+                            <div class="ov-feature-item">
+                                <div class="ov-feature-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(96,165,250,0.05));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                                </div>
+                                <div class="ov-feature-body">
+                                    <div class="ov-feature-title">ENVI标准输出</div>
+                                    <div class="ov-feature-desc">自动生成ENVI标准格式，支持地理坐标嵌入，兼容主流GIS平台</div>
+                                </div>
+                            </div>
+                            <div class="ov-feature-item">
+                                <div class="ov-feature-icon" style="background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(74,222,128,0.05));">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                </div>
+                                <div class="ov-feature-body">
+                                    <div class="ov-feature-title">完整精度评价</div>
+                                    <div class="ov-feature-desc">混淆矩阵、OA、Kappa系数、PA/UA/F1，类别冻结自动终止</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 技术架构 -->
+                    <div class="card overview-arch-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M20 15h2"/><path d="M9 2v2"/><path d="M9 20v2"/><path d="M2 9h2"/><path d="M20 9h2"/></svg>
+                                技术架构
+                            </h3>
+                        </div>
+                        <div class="ov-arch-diagram">
+                            <div class="ov-arch-layer">
+                                <div class="ov-arch-layer-label">前端</div>
+                                <div class="ov-arch-chips">
+                                    <span class="ov-arch-chip">HTML5</span>
+                                    <span class="ov-arch-chip">CSS3</span>
+                                    <span class="ov-arch-chip">JavaScript</span>
+                                    <span class="ov-arch-chip">Chart.js</span>
+                                </div>
+                            </div>
+                            <div class="ov-arch-connector"></div>
+                            <div class="ov-arch-layer">
+                                <div class="ov-arch-layer-label">后端</div>
+                                <div class="ov-arch-chips">
+                                    <span class="ov-arch-chip accent">FastAPI</span>
+                                    <span class="ov-arch-chip">Python</span>
+                                    <span class="ov-arch-chip">Uvicorn</span>
+                                    <span class="ov-arch-chip">NumPy</span>
+                                </div>
+                            </div>
+                            <div class="ov-arch-connector"></div>
+                            <div class="ov-arch-layer">
+                                <div class="ov-arch-layer-label">处理</div>
+                                <div class="ov-arch-chips">
+                                    <span class="ov-arch-chip">GDAL</span>
+                                    <span class="ov-arch-chip">GeoPandas</span>
+                                    <span class="ov-arch-chip">scikit-learn</span>
+                                    <span class="ov-arch-chip">SciPy</span>
+                                </div>
+                            </div>
+                            <div class="ov-arch-connector"></div>
+                            <div class="ov-arch-layer">
+                                <div class="ov-arch-layer-label">输出</div>
+                                <div class="ov-arch-chips">
+                                    <span class="ov-arch-chip">CSV</span>
+                                    <span class="ov-arch-chip">ENVI</span>
+                                    <span class="ov-arch-chip">TIF</span>
+                                    <span class="ov-arch-chip">SHP</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 迭代逻辑图示 -->
+                        <div class="ov-arch-iter">
+                            <div class="ov-arch-iter-title">多轮迭代控制流</div>
+                            <div class="ov-arch-iter-flow">
+                                <span class="ov-iter-node">汉明匹配</span>
+                                <span class="ov-iter-arrow">→</span>
+                                <span class="ov-iter-node">ENVI转换</span>
+                                <span class="ov-iter-arrow">→</span>
+                                <span class="ov-iter-node">重分类</span>
+                                <span class="ov-iter-arrow">→</span>
+                                <span class="ov-iter-node">精度评价</span>
+                                <span class="ov-iter-arrow">→</span>
+                                <span class="ov-iter-node decision">Kappa≥0.8?</span>
+                                <span class="ov-iter-arrow loop">↺</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Step 1 -->
+            <div id="page-step1" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">步骤 1: 影像填充合并</h2>
+                    <p class="page-desc">将遥感影像转换为指纹光谱序列并进行合并处理</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            输入配置
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">影像文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step1-input-img-dir" placeholder="选择包含 TIF/TIFF/IMG 文件的文件夹路径">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step1-input-img-dir')" title="浏览">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">输出目录</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step1-output-dir" placeholder="选择输出目录路径">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step1-output-dir')" title="浏览">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">输出文件名</label>
+                            <input type="text" class="form-input" id="step1-filename" placeholder="merged_result">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">分类数量</label>
+                            <input type="number" class="form-input" id="step1-num-classes" value="5" min="2" max="20">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">删除波段范围（可选）</label>
+                        <div class="radio-group" id="step1-delete-mode">
+                            <label class="radio-option active" data-value="default" onclick="setDeleteMode('default')">
+                                <span class="radio-dot"></span>
+                                <span>默认</span>
+                            </label>
+                            <label class="radio-option" data-value="custom" onclick="setDeleteMode('custom')">
+                                <span class="radio-dot"></span>
+                                <span>自定义</span>
+                            </label>
+                        </div>
+                        <div id="step1-delete-ranges-wrapper" class="toggle-content" style="display:none;">
+                            <div class="dynamic-list" id="step1-delete-ranges"></div>
+                            <button class="btn-add" onclick="addDeleteRange()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                添加波段范围
+                            </button>
+                        </div>
+                        <div id="step1-delete-default-note" class="default-note">
+                            使用系统默认波段处理策略
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="step1-adjust-sizes" checked>
+                            自动调整不同尺寸的CSV文件
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="step1-skip-discretization">
+                            跳过离散化（消融实验1：不进行分位数离散化，直接合并数值文件）
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep1()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        开始处理
+                    </button>
+
+                    <div class="progress-container" id="step1-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step1-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step1-status" class="progress-status">准备就绪</span>
+                            <span id="step1-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step1-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="page-step2" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">步骤 2: 样本进阶</h2>
+                    <p class="page-desc">SHP样本点像素提取与汉明差异性分析</p>
+                </div>
+
+                <!-- Tip Card: Recommended Match Order -->
+                <div class="card tip-card" id="step2-tip-card" style="display:none;">
+                    <div class="tip-card-header">
+                        <div class="tip-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <div class="tip-content">
+                            <div class="tip-title">检测到可用的推荐匹配顺序</div>
+                            <div class="tip-desc">步骤2分析已完成，已为后续匹配生成类别优先级建议，可直接用于步骤3。</div>
+                            <div class="tip-actions">
+                                <button class="btn btn-primary btn-sm" onclick="navigateToPage('step3');">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <polyline points="9 18 15 12 9 6"/>
+                                    </svg>
+                                    前往步骤3
+                                </button>
+                                <span class="tip-preview" id="step2-tip-preview"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M12 1v6m0 6v10"/>
+                                </svg>
+                            </div>
+                            输入配置
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">SHP文件/文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-shp-input" placeholder="选择SHP文件或包含SHP的文件夹">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step2-shp-input')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">TIF影像文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-tif-folder" placeholder="选择TIF影像文件夹">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step2-tif-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">实验数据CSV（步骤1输出）</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-experiment-data" placeholder="选择步骤1生成的CSV文件">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step2-experiment-data')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">输出目录</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-output-dir" placeholder="选择输出目录">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step2-output-dir')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep2()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        开始分析
+                    </button>
+
+                    <div class="progress-container" id="step2-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step2-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step2-status" class="progress-status">准备就绪</span>
+                            <span id="step2-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step2-message"></div>
+
+                    <div class="results" id="step2-results" style="display:none;">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            推荐匹配顺序
+                        </h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>顺位</th>
+                                        <th>类别名称</th>
+                                        <th>混淆度</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="step2-recommendations"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="page-step3" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">步骤 3: 汉明距离匹配</h2>
+                    <p class="page-desc">多轮汉明距离最近邻匹配</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 3h5v5"/>
+                                    <path d="M8 21H3v-5"/>
+                                </svg>
+                            </div>
+                            匹配配置
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">影像图文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-images-folder" placeholder="选择TIF影像文件夹">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step3-images-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">样本文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-samples-folder" placeholder="选择样本文件夹">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step3-samples-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">待匹配CSV文件</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-target-file" placeholder="选择CSV文件">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step3-target-file')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">输出CSV文件</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-output-file" placeholder="输出文件路径">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step3-output-file', true)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">匹配顺序</label>
+                        <div class="radio-group" id="step3-match-mode">
+                            <label class="radio-option active" data-value="default" onclick="setMatchMode('default')">
+                                <span class="radio-dot"></span>
+                                <span>从步骤2加载</span>
+                            </label>
+                            <label class="radio-option" data-value="custom" onclick="setMatchMode('custom')">
+                                <span class="radio-dot"></span>
+                                <span>自定义顺序</span>
+                            </label>
+                        </div>
+
+                        <!-- Default: load from step2 -->
+                        <div id="step3-match-default" class="toggle-content">
+                            <div class="match-order-list" id="step3-match-order"></div>
+                            <button class="btn-add" onclick="loadStep2Recommendations()" style="margin-top: 0.5rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <polyline points="1 4 1 10 7 10"/>
+                                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                                </svg>
+                                加载推荐顺序
+                            </button>
+                        </div>
+
+                        <!-- Custom: manual entry -->
+                        <div id="step3-match-custom" class="toggle-content" style="display:none;">
+                            <div class="dynamic-list" id="step3-custom-match-list"></div>
+                            <button class="btn-add" onclick="addCustomMatchItem()" style="margin-top: 0.5rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                添加类别
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">距离度量（消融实验2）</label>
+                        <div class="radio-group" id="step3-distance-metric">
+                            <label class="radio-option active" data-value="hamming" onclick="setStep3DistanceMetric('hamming')">
+                                <span class="radio-dot"></span>
+                                <span>汉明距离</span>
+                            </label>
+                            <label class="radio-option" data-value="euclidean" onclick="setStep3DistanceMetric('euclidean')">
+                                <span class="radio-dot"></span>
+                                <span>欧氏距离</span>
+                            </label>
+                        </div>
+                        <p class="form-hint">汉明模式阈值按整数位差数设置；欧氏模式阈值支持小数（连续距离值）</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">匹配轮次配置</label>
+                        <div class="dynamic-list" id="step3-rounds"></div>
+                        <button class="btn-add" onclick="addRound()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            添加轮次
+                        </button>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep3()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        开始匹配
+                    </button>
+
+                    <div class="progress-container" id="step3-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step3-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step3-status" class="progress-status">准备就绪</span>
+                            <span id="step3-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step3-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="page-step4" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">步骤 4: ENVI格式转换</h2>
+                    <p class="page-desc">CSV → TXT → ENVI 三步自动化</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                            转换配置
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">输入CSV文件</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step4-input-csv" placeholder="选择CSV文件">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step4-input-csv')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">影像图文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step4-images-folder" placeholder="选择TIF影像文件夹">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step4-images-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">输出目录</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step4-output-dir" placeholder="选择输出目录">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step4-output-dir')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="step4-add-geo" checked>
+                                添加地理坐标
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">最大序列长度（可选）</label>
+                            <input type="number" class="form-input" id="step4-max-seq-length" placeholder="留空则不过滤">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep4()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        开始转换
+                    </button>
+
+                    <div class="progress-container" id="step4-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step4-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step4-status" class="progress-status">准备就绪</span>
+                            <span id="step4-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step4-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div id="page-step5" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">步骤 5: 重分类优化</h2>
+                    <p class="page-desc">将数值映射为地物类别名称</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3v18"/>
+                                    <rect x="4" y="8" width="6" height="12" rx="1"/>
+                                </svg>
+                            </div>
+                            分类配置
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ENVI .dat 文件</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step5-dat-path" placeholder="选择_dat文件">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step5-dat-path')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">地物类别配置</label>
+                        <div class="dynamic-list" id="step5-classes"></div>
+                        <button class="btn-add" onclick="addLandCoverClass()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            添加类别
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">颜色预览</label>
+                        <div class="color-preview" id="step5-color-preview"></div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep5()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        开始重分类
+                    </button>
+
+                    <div class="progress-container" id="step5-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step5-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step5-status" class="progress-status">准备就绪</span>
+                            <span id="step5-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step5-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 6 -->
+            <div id="page-step6" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">步骤 6: 精度评价</h2>
+                    <p class="page-desc">混淆矩阵、OA、Kappa、用户/生产者精度</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                            评价配置
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">重分类DAT文件</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step6-reclass-dat" placeholder="选择步骤5输出的DAT文件">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step6-reclass-dat')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">SHP验证文件夹</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step6-shp-folder" placeholder="选择包含验证SHP的文件夹">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step6-shp-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">输出目录</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step6-output-dir" placeholder="选择输出目录">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step6-output-dir')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep6()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        开始评价
+                    </button>
+
+                    <div class="progress-container" id="step6-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step6-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step6-status" class="progress-status">准备就绪</span>
+                            <span id="step6-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step6-message"></div>
+
+                    <div class="results" id="step6-results" style="display:none;">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            评价结果
+                        </h3>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-value" id="step6-oa">--</div>
+                                <div class="metric-label">总体精度 (OA)</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="step6-kappa">--</div>
+                                <div class="metric-label">Kappa系数</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="step6-pixels">--</div>
+                                <div class="metric-label">总像素数</div>
+                            </div>
+                        </div>
+                        <div class="table-container" style="margin-top: 1.5rem;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>类别</th>
+                                        <th>生产者精度</th>
+                                        <th>用户精度</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="step6-class-accuracies"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- Pipeline Page - 全流程处理                 -->
+            <!-- ========================================== -->
+            <div id="page-pipeline" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">一键全流程处理</h2>
+                    <p class="page-desc">自动串联步骤1-6，前一阶段输出即为下一阶段输入</p>
+                </div>
+
+                <!-- 总进度面板（初始隐藏） -->
+                <div id="pipeline-progress-section" style="display:none; margin-bottom: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">执行进度</h3>
+                            <span id="pipeline-current-round-label" class="text-muted text-sm" style="margin-left:auto; margin-right:0.75rem;"></span>
+                            <span id="pipeline-total-percent" class="text-accent font-mono">0%</span>
+                        </div>
+                        <div class="progress-bar" style="margin-bottom: 0.5rem;">
+                            <div class="progress-fill" id="pipeline-total-progress-fill" style="width:0%"></div>
+                        </div>
+                        <div id="pipeline-total-status" class="text-muted text-sm">等待开始...</div>
+
+                        <!-- 终止原因横幅 -->
+                        <div id="pipeline-stop-banner" class="pipeline-stop-banner" style="display:none;"></div>
+
+                        <!-- 6步骤状态卡片 -->
+                        <div class="pipeline-steps-grid" style="margin-top: 1rem;">
+                            <div class="pipeline-step-card" id="pipeline-step-1">
+                                <div class="pipeline-step-num">01</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">影像填充合并</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">等待中</div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-2">
+                                <div class="pipeline-step-num">02</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">样本进阶分析</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">等待中</div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-3">
+                                <div class="pipeline-step-num">03</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">汉明距离匹配</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">等待中</div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-4">
+                                <div class="pipeline-step-num">04</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">ENVI格式转换</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">等待中</div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-5">
+                                <div class="pipeline-step-num">05</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">重分类优化</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">等待中</div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-6">
+                                <div class="pipeline-step-num">06</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">精度评价</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">等待中</div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 状态消息 -->
+                <div class="status-message" id="pipeline-message"></div>
+
+                <!-- 参数配置表单（统一单卡片） -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title" style="font-size: 1.1rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                            全流程参数配置
+                            <span class="text-muted text-sm" style="font-weight: 400; margin-left: 0.5rem;">步骤 1 → 6</span>
+                        </h3>
+                    </div>
+
+                    <!-- 1. 基础路径 -->
+                    <div class="pipeline-subsection">
+                        <div class="pipeline-subsection-title">
+                            <span class="step-badge">1</span>
+                            基础路径
+                            <span class="badge-required" style="margin-left: auto;">必填</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">影像文件夹路径 <span class="badge-required">必填</span></label>
+                            <div class="input-with-btn">
+                                <input type="text" id="pipeline-input-img-dir" class="form-input" placeholder="包含 .tif/.tiff/.img 影像文件的文件夹">
+                                <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-input-img-dir')">浏览</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">输出根目录 <span class="badge-required">必填</span></label>
+                            <div class="input-with-btn">
+                                <input type="text" id="pipeline-output-dir" class="form-input" placeholder="各步骤输出将自动创建子目录">
+                                <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-output-dir')">浏览</button>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">输出文件名</label>
+                                <input type="text" id="pipeline-filename" class="form-input" value="merged" placeholder="步骤1输出文件名">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">分位数类别数</label>
+                                <input type="number" id="pipeline-num-classes" class="form-input" value="5" min="2" max="20">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="pipeline-adjust-sizes" checked> 自动调整不同尺寸的CSV文件
+                            </label>
+                        </div>
+                        <!-- 消融实验1：跳过离散化 -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="pipeline-skip-discretization"> 跳过离散化（消融实验1：不进行分位数离散化，直接合并数值文件）
+                            </label>
+                            <p class="form-hint">🔬 勾选后步骤1将跳过五级分位数离散化，直接合并零值处理后的连续数值；后续匹配在连续数值序列上进行</p>
+                        </div>
+
+                        <!-- 已有步骤1结果（可选，填写后跳过步骤1） -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                使用已有步骤1结果文件
+                                <span class="badge badge-info" style="font-size:0.7rem; padding:0.1rem 0.4rem; margin-left:0.4rem;">可选</span>
+                            </label>
+                            <!-- 模式切换 -->
+                            <div class="radio-group" id="step1-csv-source-mode" style="margin-bottom:0.5rem;">
+                                <label class="radio-option active" data-value="none" onclick="setStep1CsvMode(this,'none')">
+                                    <span class="radio-dot"></span>
+                                    <span>重新运行步骤1</span>
+                                </label>
+                                <label class="radio-option" data-value="scan" onclick="setStep1CsvMode(this,'scan')">
+                                    <span class="radio-dot"></span>
+                                    <span>扫描输出目录</span>
+                                </label>
+                                <label class="radio-option" data-value="manual" onclick="setStep1CsvMode(this,'manual')">
+                                    <span class="radio-dot"></span>
+                                    <span>手动指定路径</span>
+                                </label>
+                            </div>
+
+                            <!-- 模式：扫描输出目录 -->
+                            <div id="step1-csv-scan-panel" style="display:none;">
+                                <div class="input-with-btn" style="margin-bottom:0.4rem;">
+                                    <input type="text" id="step1-csv-scan-dir" class="form-input"
+                                        placeholder="输入「输出目录」路径后点击扫描，自动列出 step1/ 下的 CSV 文件">
+                                    <button type="button" class="btn-secondary" onclick="scanStep1CsvFiles()">扫描</button>
+                                </div>
+                                <div id="step1-csv-scan-list" style="display:none;">
+                                    <div id="step1-csv-scan-items" style="max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:4px 0;"></div>
+                                    <p class="form-hint" id="step1-csv-scan-empty" style="display:none;">⚠ 未找到 CSV 文件，请先运行步骤1或更换目录</p>
+                                </div>
+                            </div>
+
+                            <!-- 模式：手动输入路径 -->
+                            <div id="step1-csv-manual-panel" style="display:none;">
+                                <div class="input-with-btn">
+                                    <input type="text" id="step1-csv-manual-path" class="form-input"
+                                        placeholder="填写自定义 CSV 绝对路径（尺寸不匹配时会自动转换）"
+                                        oninput="onExistingStep1CsvChange()">
+                                    <button type="button" class="btn-secondary" onclick="browseFile('step1-csv-manual-path')">浏览</button>
+                                </div>
+                                <p class="form-hint" style="color:var(--color-info,#3b82f6);">
+                                    💡 若 CSV 尺寸与当前影像不一致，步骤3会自动调整（截断或补空）以匹配影像尺寸
+                                </p>
+                            </div>
+
+                            <!-- 隐藏字段：实际传给后端的值 -->
+                            <input type="hidden" id="pipeline-existing-step1-csv">
+
+                            <p class="form-hint" id="pipeline-existing-step1-hint" style="display:none; color: var(--color-success, #22c55e);">
+                                ✓ 已指定步骤1结果文件，将跳过步骤1直接从步骤2开始运行（影像文件夹仍需填写，后续步骤3-5依赖影像数据）
+                            </p>
+                        </div>
+
+                        <!-- 删除波段范围 -->
+                        <div class="form-group">
+                            <label class="form-label">删除波段范围（可选）</label>
+                            <div class="radio-group" id="pipeline-delete-mode">
+                                <label class="radio-option active" data-value="default" onclick="setPipelineDeleteMode(this, 'default')">
+                                    <span class="radio-dot"></span>
+                                    <span>默认</span>
+                                </label>
+                                <label class="radio-option" data-value="custom" onclick="setPipelineDeleteMode(this, 'custom')">
+                                    <span class="radio-dot"></span>
+                                    <span>自定义</span>
+                                </label>
+                            </div>
+                            <div id="pipeline-custom-delete-section" class="toggle-content" style="display:none;">
+                                <div class="dynamic-list" id="pipeline-delete-ranges"></div>
+                                <button class="btn-add" onclick="addPipelineDeleteRange()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <line x1="12" y1="5" x2="12" y2="19"/>
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                    </svg>
+                                    添加波段范围
+                                </button>
+                            </div>
+                            <div id="pipeline-delete-default-note" class="default-note">
+                                使用系统默认波段处理策略
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-divider"></div>
+
+                    <!-- 2. 样本配置 -->
+                    <div class="pipeline-subsection">
+                        <div class="pipeline-subsection-title">
+                            <span class="step-badge">2</span>
+                            样本配置
+                            <span class="badge-required" style="margin-left: auto;">必填</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SHP样本路径 <span class="badge-required">必填</span></label>
+                            <div class="input-with-btn">
+                                <input type="text" id="pipeline-shp-input" class="form-input" placeholder="SHP文件或文件夹路径">
+                                <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-shp-input')">浏览</button>
+                            </div>
+                            <p class="form-hint">影像文件将从「影像文件夹路径」中自动选取</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-divider"></div>
+
+                    <!-- 3. 汉明距离匹配 -->
+                    <div class="pipeline-subsection">
+                        <div class="pipeline-subsection-title">
+                            <span class="step-badge">3</span>
+                            汉明距离匹配
+                        </div>
+                        <!-- 目标CSV：自动推导 -->
+                        <div class="form-group">
+                            <label class="form-label">目标CSV文件 <span class="badge badge-info" style="font-size:0.7rem; padding:0.1rem 0.35rem;">自动</span></label>
+                            <div id="pipeline-target-file-display" class="auto-value-display" style="padding: 0.6rem 0.85rem; background: var(--bg-tertiary); border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); font-size: 0.9rem; font-family: var(--font-mono); min-height: 2.5rem; display: flex; align-items: center;">
+                                <span class="text-muted">请先填写「输出根目录」和「输出文件名」</span>
+                            </div>
+                            <p class="form-hint">由步骤1输出文件自动推导</p>
+                        </div>
+
+                        <!-- 替换值预览 -->
+                        <div id="pipeline-replacement-preview-section" style="display:none; margin: 1rem 0;">
+                            <div class="card-header" style="padding: 0.75rem 1rem; background: var(--bg-secondary); border-radius: 8px 8px 0 0; border-bottom: 1px solid var(--border-color);">
+                                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                                    自动替换值预览
+                                    <span id="pipeline-classes-count" style="font-weight: normal;"></span>
+                                </h4>
+                            </div>
+                            <div id="pipeline-replacement-preview" style="padding: 0.75rem 1rem; background: var(--bg-tertiary); border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto;">
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">加载中...</p>
+                            </div>
+                            <p class="form-hint" style="margin-top: 0.5rem;">程序根据样本类型自动分配替换值，每轮迭代依次递增</p>
+                        </div>
+
+                        <!-- 消融实验2：距离度量选择 -->
+                        <div class="form-group">
+                            <label class="form-label">距离度量（消融实验2）</label>
+                            <div class="radio-group" id="pipeline-distance-metric">
+                                <label class="radio-option active" data-value="hamming" onclick="setDistanceMetric('hamming')">
+                                    <span class="radio-dot"></span>
+                                    <span>汉明距离（默认）</span>
+                                </label>
+                                <label class="radio-option" data-value="euclidean" onclick="setDistanceMetric('euclidean')">
+                                    <span class="radio-dot"></span>
+                                    <span>欧氏距离</span>
+                                </label>
+                            </div>
+                            <p class="form-hint">🔬 汉明距离=位级匹配（默认）；欧氏距离=连续数值距离匹配（消融实验对比项）。选择欧氏距离时阈值语义为连续距离值，建议配合自动阈值模式</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">汉明距离阈值模式</label>
+                            <div class="radio-group" id="pipeline-threshold-mode">
+                                <label class="radio-option" data-value="manual" onclick="setThresholdMode('manual')">
+                                    <span class="radio-dot"></span>
+                                    <span>手动设置</span>
+                                </label>
+                                <label class="radio-option active" data-value="auto" onclick="setThresholdMode('auto')">
+                                    <span class="radio-dot"></span>
+                                    <span>自动判断（推荐）</span>
+                                </label>
+                            </div>
+                            <p class="form-hint">自动模式下系统会分析数据特征推荐最合适的初始阈值</p>
+                        </div>
+
+                        <!-- 手动模式设置 -->
+                        <div id="threshold-manual-settings" style="display:none; margin-left:1rem;">
+                            <div class="form-group" style="margin-bottom:0.75rem;">
+                                <label class="form-label">初始阈值</label>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <input type="number" id="pipeline-initial-threshold" class="form-input"
+                                        value="15" min="0" step="any" style="width:120px;">
+                                    <span style="color:var(--text-muted); font-size:0.85rem;">每轮自动 +<span id="threshold-step-display">5</span></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">递增步长</label>
+                                <input type="number" id="pipeline-threshold-step" class="form-input"
+                                    value="5" min="0.1" max="200" step="any" style="width:120px;"
+                                    oninput="document.getElementById('threshold-step-display').textContent = this.value || '5'">
+                                <p class="form-hint">每轮阈值增加量（默认5；欧氏距离模式下可设小数）</p>
+                            </div>
+                        </div>
+
+                        <!-- 自动模式设置 -->
+                        <div id="threshold-auto-settings" style="display:block; margin-left:1rem;">
+                            <div class="form-group" style="margin-bottom:0.75rem;">
+                                <label class="form-label">采样像素数</label>
+                                <input type="number" id="pipeline-auto-samples" class="form-input"
+                                    value="2000" min="100" max="10000" step="100" style="width:120px;">
+                                <p class="form-hint">用于分析数据特征的采样像素数量（越多越精确）</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">递增步长</label>
+                                <input type="number" id="pipeline-threshold-step-auto" class="form-input"
+                                    value="5" min="0.1" max="200" step="any" style="width:120px;">
+                                <p class="form-hint">自动阈值确定后，每轮增加的步长（欧氏距离模式下可设小数）</p>
+                            </div>
+                        </div>
+
+                        <!-- 匹配执行模式 -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                匹配执行模式
+                                <span id="gpu-status-badge" style="font-size:0.65rem; padding:0.1rem 0.4rem; margin-left:0.4rem; border-radius:4px; display:none;">GPU检测中...</span>
+                            </label>
+                            <div class="radio-group" id="pipeline-exec-mode">
+                                <label class="radio-option" data-value="gpu" onclick="setExecMode('gpu')" id="gpu-option-label">
+                                    <span class="radio-dot"></span>
+                                    <span>GPU加速（最快）</span>
+                                </label>
+                                <label class="radio-option active" data-value="multiprocess" onclick="setExecMode('multiprocess')">
+                                    <span class="radio-dot"></span>
+                                    <span>多进程并行</span>
+                                </label>
+                                <label class="radio-option" data-value="serial" onclick="setExecMode('serial')">
+                                    <span class="radio-dot"></span>
+                                    <span>主循环串行</span>
+                                </label>
+                            </div>
+                            <p class="form-hint" id="exec-mode-hint">GPU加速模式利用显卡并行计算汉明距离，大规模数据可提速5-8倍；多进程模式利用多核CPU并行匹配</p>
+                        </div>
+                        <!-- 进程数设置（多进程模式可见） -->
+                        <div class="form-group" id="pipeline-num-processes-group">
+                            <label class="form-label">
+                                并行进程数
+                                <span class="badge badge-info" style="font-size:0.65rem; padding:0.1rem 0.4rem; margin-left:0.4rem;" id="pipeline-num-processes-badge">自动</span>
+                            </label>
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <input type="range" id="pipeline-num-processes" min="1" max="32" value="0"
+                                       style="flex:1; cursor:pointer; accent-color:var(--accent,#6366f1);"
+                                       oninput="updateNumProcessesDisplay(this.value)">
+                                <span id="pipeline-num-processes-display" style="min-width:4rem; text-align:center; font-weight:600; font-size:1rem; color:var(--accent,#6366f1);">自动</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
+                                <span>1 进程</span>
+                                <span>自动（推荐）</span>
+                                <span>32 进程</span>
+                            </div>
+                            <p class="form-hint">
+                                拖动滑块设置进程数（1-32）；拖到最左端为<strong>自动</strong>模式（max(8, CPU核心数)）。建议根据 CPU 核心数设置，过多进程反而会因内存竞争降速。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-divider"></div>
+
+                    <!-- 4. ENVI转换 -->
+                    <div class="pipeline-subsection">
+                        <div class="pipeline-subsection-title">
+                            <span class="step-badge">4</span>
+                            ENVI格式转换
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="pipeline-add-geo" checked> 添加地理坐标信息
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">最大序列长度过滤 <span class="text-muted text-sm">（可选）</span></label>
+                                <input type="number" id="pipeline-max-seq-length" class="form-input" value="" placeholder="留空不限制，自动检测波段数">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-divider"></div>
+
+                    <!-- 5. 地物类别 -->
+                    <div class="pipeline-subsection">
+                        <div class="pipeline-subsection-title">
+                            <span class="step-badge">5</span>
+                            地物类别定义
+                            <span class="badge badge-info" style="margin-left: auto; font-size: 0.7rem; padding: 0.1rem 0.4rem;">自动检测</span>
+                        </div>
+                        <div id="pipeline-classes">
+                            <div class="form-hint" id="pipeline-classes-placeholder" style="padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; text-align: center;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="display:inline;vertical-align:middle; margin-right: 0.3rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                请先填写「影像文件夹路径」和「SHP样本路径」，系统将自动检测地物类别
+                            </div>
+                        </div>
+                        <p class="form-hint" style="margin-top:0.5rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="display:inline;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            冻结策略（可选）：启用后每类连续 N 轮 PA 增幅 &lt; 0.5% 时自动冻结，冻结后该类保持固定替换值；未启用则整个运行期间不进行冻结
+                        </p>
+                    </div>
+
+                    <div class="pipeline-divider"></div>
+
+                    <!-- 6. 精度评价 -->
+                    <div class="pipeline-subsection">
+                        <div class="pipeline-subsection-title">
+                            <span class="step-badge">6</span>
+                            精度评价配置
+                            <span class="badge-required" style="margin-left: auto;">必填</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">验证SHP文件夹 <span class="badge-required">必填</span></label>
+                            <div class="input-with-btn">
+                                <input type="text" id="pipeline-shp-folder" class="form-input" placeholder="验证样本SHP文件夹路径">
+                                <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-shp-folder')">浏览</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-divider"></div>
+
+                    <!-- 迭代控制 -->
+                    <div class="pipeline-subsection" style="padding-bottom: 0;">
+                        <div class="pipeline-subsection-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                            迭代控制 · 终止条件
+                        </div>
+                        <p class="form-hint" style="margin-bottom:1rem;">
+                            步骤3-6 循环迭代，每轮完成精度评价后依次判断：① Kappa≥阈值 ② 未分类&lt;阈值 ③ 类别连续N轮增幅&lt;0.5%→冻结（启用冻结时） ④ 达到最大轮次→终止
+                        </p>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label class="form-label">
+                                <input type="checkbox" id="pipeline-enable-freeze" checked onchange="toggleFreezeOption()"> 启用类别冻结（不勾选则整个运行期间不进行冻结，所有类别始终保持活跃）
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Kappa 终止阈值</label>
+                                <input type="number" id="pipeline-kappa-threshold"
+                                       class="form-input" value="0.8" min="0" max="1" step="0.01"
+                                       placeholder="0.80">
+                                <p class="form-hint">默认 0.80</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">未分类像素比例阈值（%）</label>
+                                <input type="number" id="pipeline-unclassified-threshold"
+                                       class="form-input" value="10" min="0" max="100" step="0.5"
+                                       placeholder="10.0">
+                                <p class="form-hint">默认 10%</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">最大迭代轮次</label>
+                                <input type="number" id="pipeline-max-iterations"
+                                       class="form-input" value="10" min="1" max="50" step="1"
+                                       placeholder="10">
+                                <p class="form-hint">默认 10</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">冻结连续轮次 <span class="text-muted text-sm">（PA增幅&lt;0.5%触发）</span></label>
+                                <input type="number" id="pipeline-consecutive-rounds"
+                                       class="form-input" value="3" min="1" max="10" step="1"
+                                       placeholder="3">
+                                <p class="form-hint">默认 3（仅启用类别冻结时生效）</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /统一参数卡片 -->
+
+                <!-- 执行按钮 -->
+                <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 0.75rem;">
+                    <button id="pipeline-run-btn" class="btn-primary btn-lg" onclick="runPipeline()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        启动全流程处理
+                    </button>
+                    <button id="pipeline-pause-btn" class="btn-warning btn-lg" onclick="pausePipeline()" style="display:none; background: var(--warning-color, #f0a030); border-color: var(--warning-color, #f0a030); color: #fff;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                        暂停
+                    </button>
+                    <button id="pipeline-restart-btn" class="btn-lg" onclick="restartPipeline()" style="display:none; font-size: 1.1rem; padding: 0.85rem 2.2rem; letter-spacing: 0.05em; background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: #fff; border: none; box-shadow: 0 0 24px rgba(245, 158, 11, 0.45), 0 4px 16px rgba(245, 158, 11, 0.25); border-radius: 0.75rem; cursor: pointer; transition: all 0.25s ease; animation: restart-glow 2s ease-in-out infinite;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="22" height="22" style="margin-right: 0.4rem;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-5.36L1 10"/></svg>
+                        <span style="font-weight: 700;">重新开始</span>
+                    </button>
+                </div>
+
+                <!-- 最终结果面板 -->
+                <!-- 轮次迭代历史表 -->
+                <div id="pipeline-rounds-section" style="display:none; margin-top: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                                各轮次评价结果
+                            </h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>轮次</th>
+                                    <th>距离阈值</th>
+                                    <th>Kappa 系数</th>
+                                    <th>总体精度 OA</th>
+                                    <th>未分类像素比例</th>
+                                    <th>替换值</th>
+                                    <th>类别状态</th>
+                                    <th>终止</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipeline-rounds-history"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 全流程结果展示面板（Dashboard） -->
+                <div id="pipeline-results" style="display:block; margin-top: 1.5rem;">
+
+                    <!-- === 顶部指标卡片 === -->
+                    <div class="dashboard-metric-row" id="dashboard-metrics">
+                        <div class="dashboard-metric-card">
+                            <div class="dashboard-metric-icon" style="background: var(--accent-glow); color: var(--accent);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                            </div>
+                            <div class="dashboard-metric-body">
+                                <div class="dashboard-metric-value" id="dash-bands">--</div>
+                                <div class="dashboard-metric-label">影像波段数</div>
+                                <div class="dashboard-metric-sublabel">个波段</div>
+                            </div>
+                        </div>
+                        <div class="dashboard-metric-card">
+                            <div class="dashboard-metric-icon" style="background: rgba(34,211,238,0.1); color: var(--accent-secondary);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+                            </div>
+                            <div class="dashboard-metric-body">
+                                <div class="dashboard-metric-value" id="dash-image-size">--</div>
+                                <div class="dashboard-metric-label">影像尺寸</div>
+                                <div class="dashboard-metric-sublabel">像元</div>
+                            </div>
+                        </div>
+                        <div class="dashboard-metric-card">
+                            <div class="dashboard-metric-icon" style="background: rgba(168,85,247,0.1); color: #a855f7;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                            </div>
+                            <div class="dashboard-metric-body">
+                                <div class="dashboard-metric-value" id="dash-class-count">--</div>
+                                <div class="dashboard-metric-label">样本类别数</div>
+                                <div class="dashboard-metric-sublabel">类地物</div>
+                            </div>
+                        </div>
+                        <div class="dashboard-metric-card">
+                            <div class="dashboard-metric-icon" style="background: rgba(234,179,8,0.1); color: var(--warning);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div class="dashboard-metric-body">
+                                <div class="dashboard-metric-value" id="dash-sample-count">--</div>
+                                <div class="dashboard-metric-label">样本总数</div>
+                                <div class="dashboard-metric-sublabel">个样本点</div>
+                            </div>
+                        </div>
+                        <div class="dashboard-metric-card">
+                            <div class="dashboard-metric-icon" style="background: rgba(34,197,94,0.1); color: var(--success);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <div class="dashboard-metric-body">
+                                <div class="dashboard-metric-value" id="dash-oa">--</div>
+                                <div class="dashboard-metric-label">总体精度 (OA)</div>
+                                <div class="dashboard-metric-sublabel">当前精度</div>
+                            </div>
+                        </div>
+                        <div class="dashboard-metric-card">
+                            <div class="dashboard-metric-icon" style="background: rgba(59,130,246,0.1); color: #3b82f6;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            </div>
+                            <div class="dashboard-metric-body">
+                                <div class="dashboard-metric-value" id="dash-kappa">--</div>
+                                <div class="dashboard-metric-label">Kappa 系数</div>
+                                <div class="dashboard-metric-sublabel">当前Kappa</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === 分类结果图 + 精度变化曲线 === -->
+                    <div class="dashboard-grid-2" style="margin-top: 1rem;">
+                        <!-- 分类结果图 -->
+                        <div class="card" style="min-height: 320px;">
+                            <div class="card-header" style="justify-content: space-between;">
+                                <h3 class="card-title">分类结果图</h3>
+                                <span class="badge badge-info" style="font-size:0.7rem;">最终轮</span>
+                            </div>
+                            <div id="dash-classification-map" class="dashboard-map-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                                <p class="text-muted">运行后将显示分类结果</p>
+                            </div>
+                            <!-- 图例 -->
+                            <div id="dash-legend" class="dashboard-legend"></div>
+                        </div>
+                        <!-- 精度变化曲线 -->
+                        <div class="card" style="min-height: 320px;">
+                            <div class="card-header" style="justify-content: space-between;">
+                                <h3 class="card-title">精度变化曲线</h3>
+                                <select id="dash-metric-select" class="form-input" style="width:auto; min-width:100px; font-size:0.8rem; padding:0.3rem 0.6rem;">
+                                    <option value="kappa">Kappa系数</option>
+                                    <option value="oa">总体精度 OA</option>
+                                </select>
+                            </div>
+                            <div style="position:relative; height: 260px; padding: 0.5rem;">
+                                <canvas id="dash-accuracy-chart" style="width:100%; height:100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === 各类别精度评价 + 光谱曲线 + 处理流程状态 === -->
+                    <div class="dashboard-grid-3" style="margin-top: 1rem;">
+                        <!-- 各类别精度评价 -->
+                        <div class="card" style="min-height: 280px;">
+                            <div class="card-header">
+                                <h3 class="card-title">各类别精度评价</h3>
+                            </div>
+                            <div style="overflow-x: auto;">
+                                <table class="data-table dashboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>类别</th>
+                                            <th>样本数</th>
+                                            <th>PA</th>
+                                            <th>UA</th>
+                                            <th>F1</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dash-class-table">
+                                        <tr><td colspan="5" class="text-muted" style="text-align:center; padding:2rem;">运行后显示数据</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- 光谱指纹曲线 -->
+                        <div class="card" style="min-height: 280px;">
+                            <div class="card-header">
+                                <h3 class="card-title">光谱指纹曲线</h3>
+                            </div>
+                            <div style="position:relative; height: 200px; padding: 0.5rem;">
+                                <canvas id="dash-spectral-chart" style="width:100%; height:100%;"></canvas>
+                            </div>
+                            <div id="dash-spectral-legend" class="dashboard-legend-sm"></div>
+                        </div>
+                        <!-- 处理流程状态 -->
+                        <div class="card" style="min-height: 280px;">
+                            <div class="card-header">
+                                <h3 class="card-title">处理流程状态</h3>
+                            </div>
+                            <div id="dash-process-status" class="dashboard-process-list">
+                                <!-- 运行时填充 -->
+                            </div>
+                            <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--border-color);">
+                                <button type="button" class="btn-secondary btn-sm" style="width:100%;" onclick="openLogModal()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:0.3rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    查看详细日志
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 输出路径汇总 -->
+                    <div class="card" style="margin-top:1rem;">
+                        <div class="card-header">
+                            <h3 class="card-title">输出文件路径</h3>
+                        </div>
+                        <div id="pipeline-outputs" class="output-paths-list"></div>
+                    </div>
+                </div>
+
+            </div><!-- /page-pipeline -->
+
+        </main>
+    </div>
+
+    <!-- Task Monitor -->
+    <div class="task-monitor" id="task-monitor">
+        <div class="task-monitor-header">
+            <span>处理中</span>
+            <button onclick="hideTaskMonitor()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="task-monitor-body">
+            <div id="task-monitor-content">
+                <div class="task-monitor-status">准备就绪</div>
+                <div class="progress-bar" style="margin-top: 0.5rem;">
+                    <div class="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 详细日志模态框 ====== -->
+    <div id="log-modal" style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card,#1a1a2e); border:1px solid var(--border-color,#333); border-radius:12px; width:min(820px,94vw); max-height:80vh; display:flex; flex-direction:column; box-shadow:0 24px 80px rgba(0,0,0,0.5);">
+            <!-- 头部 -->
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border-color,#333); flex-shrink:0;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--accent-primary,#4fc3f7)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span style="font-size:1rem; font-weight:600; color:var(--text-primary,#eee);">处理日志</span>
+                    <span id="log-modal-count" style="font-size:0.75rem; color:var(--text-muted,#888); background:var(--bg-secondary,#222); padding:2px 8px; border-radius:10px;">0 条</span>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <button onclick="clearPipelineLogs()" style="background:none; border:1px solid var(--border-color,#333); color:var(--text-secondary,#aaa); border-radius:6px; padding:4px 12px; font-size:0.8rem; cursor:pointer;" title="清空日志">清空</button>
+                    <button onclick="closeLogModal()" style="background:none; border:none; color:var(--text-secondary,#aaa); cursor:pointer; padding:4px; border-radius:6px; display:flex; align-items:center;" title="关闭">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- 日志内容区 -->
+            <div id="log-modal-body" style="flex:1; overflow-y:auto; padding:0.75rem 0.5rem; font-family:'Cascadia Code','Consolas','Courier New',monospace; font-size:0.78rem; line-height:1.65;">
+                <div class="log-empty" style="text-align:center; padding:3rem 0; color:var(--text-muted,#666);">暂无日志记录，请先运行全流程。</div>
+            </div>
+            <!-- 底部提示 -->
+            <div style="padding:0.6rem 1.25rem; border-top:1px solid var(--border-color,#333); font-size:0.72rem; color:var(--text-muted,#666); flex-shrink:0;">
+                日志实时更新 · 保留本次运行所有步骤的状态消息
+            </div>
+        </div>
+    </div>
+    <style>
+    .log-entry { display:flex; align-items:baseline; gap:0.5rem; padding:3px 0.75rem; border-radius:4px; margin-bottom:1px; }
+    .log-entry:hover { background: rgba(255,255,255,0.04); }
+    .log-time { color: var(--text-muted, #666); font-size:0.72rem; flex-shrink:0; min-width:56px; }
+    .log-tag  { font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:3px; flex-shrink:0; min-width:42px; text-align:center; }
+    .log-msg  { color: var(--text-secondary, #ccc); word-break:break-all; }
+    .log-level-info  .log-tag { background:rgba(79,195,247,0.15); color:#4fc3f7; }
+    .log-level-success .log-tag { background:rgba(72,199,142,0.15); color:#48c78e; }
+    .log-level-warn  .log-tag { background:rgba(255,185,0,0.15); color:#ffd166; }
+    .log-level-error .log-tag { background:rgba(240,82,82,0.2); color:#f05252; }
+    .log-level-error .log-msg { color:#f9a8a8; }
+    .log-level-success .log-msg { color:#a7f3d0; }
+    .log-empty { text-align:center; padding:3rem 0; color:var(--text-muted,#666); }
+    #log-modal-body::-webkit-scrollbar { width:6px; }
+    #log-modal-body::-webkit-scrollbar-track { background:transparent; }
+    #log-modal-body::-webkit-scrollbar-thumb { background:var(--border-color,#444); border-radius:3px; }
+    /* 点击模态框背景关闭 */
+    #log-modal { cursor:default; }
+    </style>
+    <script>
+    // 点击背景关闭模态框
+    document.getElementById('log-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeLogModal();
+    });
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Scripts（带版本号防止浏览器缓存旧文件） -->
+    <script src="/static/js/config.js?v=20260608b"></script>
+    <script src="/static/js/navigation.js?v=2026060802"></script>
+    <script src="/static/js/api.js?v=20260609a"></script>
+    <script src="/static/js/forms.js?v=2026060802"></script>
+    <script src="/static/js/steps.js?v=2026060802"></script>
+    <script src="/static/js/pipeline.js?v=20260610e"></script>
+    <script src="/static/js/app.js?v=2026060802"></script>
+    <script src="/static/js/preview.js?v=20260608"></script>
+
+    <!-- ============================================================ -->
+    <!-- 预览与格式转换面板                                            -->
+    <!-- ============================================================ -->
+    <div id="preview-panel" class="preview-panel-hidden">
+        <div class="preview-header">
+            <h3>预览与格式转换</h3>
+            <div style="display:flex;gap:0.5rem;">
+                <button class="btn-sm btn-secondary" onclick="togglePreviewPanel()">关闭</button>
+            </div>
+        </div>
+        <div class="preview-body">
+            <!-- 文件浏览器 -->
+            <div class="preview-section">
+                <div class="preview-label">数据目录</div>
+                <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+                    <input id="preview-dir-input" type="text" value="E:/output/step2" style="flex:1;padding:6px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;" placeholder="输入目录路径...">
+                    <button class="btn-sm btn-primary" onclick="browseDir()">浏览</button>
+                </div>
+                <div style="display:flex;gap:0.25rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+                    <button class="btn-xs" onclick="quickBrowse('E:/output/step2')">步骤2</button>
+                    <button class="btn-xs" onclick="quickBrowse('E:/output/step1')">步骤1</button>
+                    <button class="btn-xs" onclick="quickBrowse('E:/output')">全目录</button>
+                </div>
+                <div id="preview-file-list" style="max-height:200px;overflow-y:auto;font-size:13px;">
+                    <span style="color:var(--text-secondary);">点击"浏览"查看文件列表</span>
+                </div>
+            </div>
+
+            <!-- 文件内容预览 -->
+            <div class="preview-section" style="margin-top:0.75rem;">
+                <div class="preview-label">文件内容预览</div>
+                <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                    <span id="preview-current-file" style="font-size:13px;color:var(--text-secondary);">未选择文件</span>
+                    <select id="preview-rows-select" style="font-size:12px;padding:3px 6px;border-radius:4px;">
+                        <option value="10">显示10行</option>
+                        <option value="50" selected>显示50行</option>
+                        <option value="100">显示100行</option>
+                        <option value="200">显示200行</option>
+                    </select>
+                    <button class="btn-xs btn-primary" onclick="refreshPreview()">刷新</button>
+                </div>
+                <div id="preview-content" style="max-height:300px;overflow:auto;margin-top:0.5rem;background:var(--bg-secondary);border-radius:8px;padding:0.75rem;font-family:monospace;font-size:12px;white-space:nowrap;">
+                    <span style="color:var(--text-secondary);">点击文件列表中的文件进行预览</span>
+                </div>
+            </div>
+
+            <!-- 格式转换 -->
+            <div class="preview-section" style="margin-top:0.75rem;">
+                <div class="preview-label">格式转换</div>
+                <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                    <select id="convert-format-select" style="font-size:12px;padding:4px 8px;border-radius:4px;">
+                        <option value="json">转JSON</option>
+                        <option value="txt">转TXT(制表符)</option>
+                        <option value="csv">下载CSV</option>
+                    </select>
+                    <button class="btn-sm btn-primary" onclick="convertAndDownload()">转换并下载</button>
+                </div>
+                <div id="convert-result" style="margin-top:0.25rem;font-size:12px;color:var(--text-secondary);"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预览面板切换按钮（右下角悬浮） -->
+    <button id="preview-toggle-btn" onclick="togglePreviewPanel()" title="预览与格式转换" style="position:fixed;bottom:20px;right:20px;z-index:1000;width:44px;height:44px;border-radius:50%;background:var(--accent-color,#3b82f6);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+
+    <style>
+    .preview-panel-hidden { display:none !important; }
+    #preview-panel {
+        position:fixed; top:0; right:0; z-index:9999;
+        width:480px; max-width:95vw; height:100vh;
+        background:var(--bg-primary,#fff);
+        box-shadow:-4px 0 24px rgba(0,0,0,0.15);
+        display:flex; flex-direction:column;
+        transition:transform 0.3s ease;
+    }
+    .preview-header {
+        display:flex; justify-content:space-between; align-items:center;
+        padding:12px 16px; border-bottom:1px solid var(--border-color);
+        background:var(--bg-secondary,#f5f5f5);
+    }
+    .preview-header h3 { margin:0; font-size:16px; }
+    .preview-body { flex:1; overflow-y:auto; padding:12px 16px; }
+    .preview-section { margin-bottom:0.5rem; }
+    .preview-label {
+        font-size:13px; font-weight:600; margin-bottom:6px;
+        color:var(--text-primary);
+    }
+    .btn-xs {
+        padding:3px 8px; font-size:11px; border-radius:4px;
+        border:1px solid var(--border-color); cursor:pointer;
+        background:var(--bg-secondary); color:var(--text-primary);
+    }
+    .btn-xs:hover { background:var(--accent-color); color:#fff; }
+    .btn-sm {
+        padding:6px 14px; font-size:13px; border-radius:6px; border:none; cursor:pointer;
+    }
+    .btn-primary { background:var(--accent-color,#3b82f6); color:#fff; }
+    .btn-secondary { background:var(--bg-secondary,#e5e7eb); color:var(--text-primary); }
+    .file-item {
+        display:flex; justify-content:space-between; align-items:center;
+        padding:4px 8px; border-radius:4px; cursor:pointer;
+    }
+    .file-item:hover { background:var(--accent-color); color:#fff; }
+    .file-item.selected { background:var(--accent-color); color:#fff; font-weight:600; }
+    .file-item .size { font-size:11px; opacity:0.7; }
+    </style>
+
+</body>
+</html>

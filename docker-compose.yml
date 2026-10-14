@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  classification-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - TEMP_DIR=/tmp/classification
+    volumes:
+      # 挂载数据目录（开发时）
+      - ./data:/data:rw
+    restart: unless-stopped

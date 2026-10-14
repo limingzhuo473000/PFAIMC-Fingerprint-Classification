@@ -1,0 +1,59 @@
+/**
+ * CSS Variables - CSS变量定义
+ * 统一管理设计系统的颜色、字体、间距等
+ */
+
+:root {
+    /* Background Colors */
+    --bg-primary: #09090b;
+    --bg-secondary: #18181b;
+    --bg-card: rgba(24, 24, 27, 0.8);
+    --bg-card-hover: rgba(39, 39, 42, 0.9);
+
+    /* Border Colors */
+    --border: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(20, 184, 166, 0.3);
+
+    /* Text Colors */
+    --text-primary: #fafafa;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+
+    /* Accent Colors */
+    --accent: #14b8a6;
+    --accent-glow: rgba(20, 184, 166, 0.15);
+    --accent-secondary: #22d3ee;
+
+    /* Status Colors */
+    --success: #22c55e;
+    --warning: #eab308;
+    --error: #ef4444;
+
+    /* Gradients */
+    --gradient-card: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(34, 211, 238, 0.02) 100%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 40px rgba(20, 184, 166, 0.1);
+
+    /* Border Radius */
+    --radius-lg: 1.25rem;
+    --radius-md: 0.875rem;
+    --radius-sm: 0.5rem;
+
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-normal: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-slow: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Z-Index */
+    --z-base: 1;
+    --z-sidebar: 100;
+    --z-modal: 1000;
+}

@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>閬ユ劅褰卞儚鍒嗙被绯荤粺</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/pages.css">
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>閬ユ劅褰卞儚鍒嗙被</h1>
+                        <span>v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-label">瀵艰埅</div>
+
+                <!-- Overview Nav Item -->
+                <div class="nav-item active" data-page="overview">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </div>
+                    <div class="nav-content">
+                        <div class="nav-title">绯荤粺鎬昏</div>
+                        <div class="nav-desc">澶勭悊娴佺▼涓庣姸鎬?/div>
+                    </div>
+                </div>
+
+                <!-- Collapsible Section: 闃舵鎬у鐞?-->
+                <div class="nav-section-header" data-target="data-processing-section">
+                    <span class="nav-label" style="margin: 0; padding: 0;">闃舵鎬у鐞?/span>
+                    <svg class="nav-section-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="nav-section-content" id="data-processing-section">
+
+                    <!-- Step 1 -->
+                    <div class="nav-item" data-page="step1">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M3 9h18"/>
+                                <path d="M9 21V9"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">褰卞儚濉厖鍚堝苟</div>
+                            <div class="nav-desc">姝ラ 1</div>
+                        </div>
+                        <span class="nav-badge">01</span>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="nav-item" data-page="step2">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v10"/>
+                                <path d="M1 12h6m6 0h10"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">鏍锋湰杩涢樁</div>
+                            <div class="nav-desc">姝ラ 2</div>
+                        </div>
+                        <span class="nav-badge">02</span>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="nav-item" data-page="step3">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 3h5v5"/>
+                                <path d="M8 21H3v-5"/>
+                                <path d="M21 3l-9 9"/>
+                                <path d="M3 21l9-9"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">姹夋槑鍖归厤</div>
+                            <div class="nav-desc">姝ラ 3</div>
+                        </div>
+                        <span class="nav-badge">03</span>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="nav-item" data-page="step4">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">ENVI杞崲</div>
+                            <div class="nav-desc">姝ラ 4</div>
+                        </div>
+                        <span class="nav-badge">04</span>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="nav-item" data-page="step5">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v18"/>
+                                <rect x="4" y="8" width="6" height="12" rx="1"/>
+                                <rect x="14" y="4" width="6" height="16" rx="1"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">閲嶅垎绫讳紭鍖?/div>
+                            <div class="nav-desc">姝ラ 5</div>
+                        </div>
+                        <span class="nav-badge">05</span>
+                    </div>
+
+                    <!-- Step 6 -->
+                    <div class="nav-item" data-page="step6">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">绮惧害璇勪环</div>
+                            <div class="nav-desc">姝ラ 6</div>
+                        </div>
+                        <span class="nav-badge">06</span>
+                    </div>
+                </div>
+
+                <!-- 鍏ㄦ祦绋嬪鐞?-->
+                <div class="nav-section-header" data-target="full-flow-section" style="margin-top: 1.5rem;">
+                    <span class="nav-label" style="margin: 0; padding: 0;">鍏ㄦ祦绋嬪鐞?/span>
+                    <svg class="nav-section-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="nav-section-content" id="full-flow-section">
+                    <div class="nav-item" data-page="pipeline">
+                        <div class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <div class="nav-content">
+                            <div class="nav-title">涓€閿叏娴佺▼</div>
+                            <div class="nav-desc">姝ラ 1 鈫?6 涓茶仈</div>
+                        </div>
+                        <span class="nav-badge" style="background: var(--gradient-card); color: var(--accent);">ALL</span>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>绯荤粺灏辩华</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Page -->
+            <div id="page-overview" class="page active">
+                <div class="overview-hero">
+                    <h2>閬ユ劅褰卞儚鍒嗙被澶勭悊绯荤粺</h2>
+                    <p>鍩轰簬鎸囩汗鍏夎氨搴忓垪涓庢眽鏄庤窛绂荤殑閬ユ劅褰卞儚鏅鸿兘鍒嗙被瑙ｅ喅鏂规</p>
+                    <div class="flow-chart">
+                        <div class="flow-step">
+                            <div class="flow-step-num">STEP 01</div>
+                            <div class="flow-step-name">褰卞儚濉厖</div>
+                        </div>
+                        <span class="flow-arrow">鈫?/span>
+                        <div class="flow-step">
+                            <div class="flow-step-num">STEP 02</div>
+                            <div class="flow-step-name">鏍锋湰杩涢樁</div>
+                        </div>
+                        <span class="flow-arrow">鈫?/span>
+                        <div class="flow-step">
+                            <div class="flow-step-num">STEP 03</div>
+                            <div class="flow-step-name">姹夋槑鍖归厤</div>
+                        </div>
+                        <span class="flow-arrow">鈫?/span>
+                        <div class="flow-step">
+                            <div class="flow-step-num">STEP 04</div>
+                            <div class="flow-step-name">ENVI杞崲</div>
+                        </div>
+                        <span class="flow-arrow">鈫?/span>
+                        <div class="flow-step">
+                            <div class="flow-step-num">STEP 05</div>
+                            <div class="flow-step-name">閲嶅垎绫?/div>
+                        </div>
+                        <span class="flow-arrow">鈫?/span>
+                        <div class="flow-step">
+                            <div class="flow-step-num">STEP 06</div>
+                            <div class="flow-step-name">绮惧害璇勪环</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">澶勭悊姝ラ</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">TIF/IMG</div>
+                        <div class="stat-label">鏀寔鏍煎紡</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">瀹炴椂</div>
+                        <div class="stat-label">杩涘害鐩戞帶</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">鑷姩</div>
+                        <div class="stat-label">鍒嗙被浼樺寲</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 16v-4"/>
+                                    <path d="M12 8h.01"/>
+                                </svg>
+                            </div>
+                            鏍稿績鐗规€?                        </div>
+                    </div>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-title">鎸囩汗鍏夎氨搴忓垪</div>
+                            <div class="feature-desc">灏嗗鍏夎氨褰卞儚杞崲涓烘寚绾瑰厜璋卞簭鍒楋紝鏀寔闆跺€煎鐞嗕笌鍒嗕綅鏁板垎绫?/div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-title">姹夋槑璺濈鍖归厤</div>
+                            <div class="feature-desc">澶氳疆鏈€杩戦偦鍖归厤锛屽樊寮傛€ч┍鍔ㄧ瓥鐣ヤ紭鍏堝鐞嗘槗娣锋穯绫诲埆</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-title">ENVI鏍囧噯杈撳嚭</div>
+                            <div class="feature-desc">鑷姩鐢熸垚ENVI鏍囧噯鏍煎紡锛屾敮鎸佸湴鐞嗗潗鏍囦俊鎭祵鍏?/div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-title">瀹屾暣绮惧害璇勪环</div>
+                            <div class="feature-desc">娣锋穯鐭╅樀銆丱A銆並appa绯绘暟銆佺敓浜ц€?鐢ㄦ埛绮惧害</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1 -->
+            <div id="page-step1" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">姝ラ 1: 褰卞儚濉厖鍚堝苟</h2>
+                    <p class="page-desc">灏嗛仴鎰熷奖鍍忚浆鎹负鎸囩汗鍏夎氨搴忓垪骞惰繘琛屽悎骞跺鐞?/p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            杈撳叆閰嶇疆
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">褰卞儚鏂囦欢澶?/label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step1-input-img-dir" placeholder="閫夋嫨鍖呭惈 TIF/TIFF/IMG 鏂囦欢鐨勬枃浠跺す璺緞">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step1-input-img-dir')" title="娴忚">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">杈撳嚭鐩綍</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step1-output-dir" placeholder="閫夋嫨杈撳嚭鐩綍璺緞">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step1-output-dir')" title="娴忚">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">杈撳嚭鏂囦欢鍚?/label>
+                            <input type="text" class="form-input" id="step1-filename" placeholder="merged_result">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">鍒嗙被鏁伴噺</label>
+                            <input type="number" class="form-input" id="step1-num-classes" value="5" min="2" max="20">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">鍒犻櫎娉㈡鑼冨洿锛堝彲閫夛級</label>
+                        <div class="radio-group" id="step1-delete-mode">
+                            <label class="radio-option active" data-value="default" onclick="setDeleteMode('default')">
+                                <span class="radio-dot"></span>
+                                <span>榛樿</span>
+                            </label>
+                            <label class="radio-option" data-value="custom" onclick="setDeleteMode('custom')">
+                                <span class="radio-dot"></span>
+                                <span>鑷畾涔?/span>
+                            </label>
+                        </div>
+                        <div id="step1-delete-ranges-wrapper" class="toggle-content" style="display:none;">
+                            <div class="dynamic-list" id="step1-delete-ranges"></div>
+                            <button class="btn-add" onclick="addDeleteRange()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                娣诲姞娉㈡鑼冨洿
+                            </button>
+                        </div>
+                        <div id="step1-delete-default-note" class="default-note">
+                            浣跨敤绯荤粺榛樿娉㈡澶勭悊绛栫暐
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="step1-adjust-sizes" checked>
+                            鑷姩璋冩暣涓嶅悓灏哄鐨凜SV鏂囦欢
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep1()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        寮€濮嬪鐞?                    </button>
+
+                    <div class="progress-container" id="step1-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step1-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step1-status" class="progress-status">鍑嗗灏辩华</span>
+                            <span id="step1-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step1-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="page-step2" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">姝ラ 2: 鏍锋湰杩涢樁</h2>
+                    <p class="page-desc">SHP鏍锋湰鐐瑰儚绱犳彁鍙栦笌姹夋槑宸紓鎬у垎鏋?/p>
+                </div>
+
+                <!-- Tip Card: Recommended Match Order -->
+                <div class="card tip-card" id="step2-tip-card" style="display:none;">
+                    <div class="tip-card-header">
+                        <div class="tip-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <div class="tip-content">
+                            <div class="tip-title">妫€娴嬪埌鍙敤鐨勬帹鑽愬尮閰嶉『搴?/div>
+                            <div class="tip-desc">姝ラ2鍒嗘瀽宸插畬鎴愶紝宸蹭负鍚庣画鍖归厤鐢熸垚绫诲埆浼樺厛绾у缓璁紝鍙洿鎺ョ敤浜庢楠?銆?/div>
+                            <div class="tip-actions">
+                                <button class="btn btn-primary btn-sm" onclick="navigateToPage('step3');">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <polyline points="9 18 15 12 9 6"/>
+                                    </svg>
+                                    鍓嶅線姝ラ3
+                                </button>
+                                <span class="tip-preview" id="step2-tip-preview"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M12 1v6m0 6v10"/>
+                                </svg>
+                            </div>
+                            杈撳叆閰嶇疆
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">SHP鏂囦欢/鏂囦欢澶?/label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-shp-input" placeholder="閫夋嫨SHP鏂囦欢鎴栧寘鍚玈HP鐨勬枃浠跺す">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step2-shp-input')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">TIF褰卞儚鏂囦欢澶?/label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-tif-folder" placeholder="閫夋嫨TIF褰卞儚鏂囦欢澶?>
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step2-tif-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">瀹為獙鏁版嵁CSV锛堟楠?杈撳嚭锛?/label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-experiment-data" placeholder="閫夋嫨姝ラ1鐢熸垚鐨凜SV鏂囦欢">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step2-experiment-data')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">杈撳嚭鐩綍</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step2-output-dir" placeholder="閫夋嫨杈撳嚭鐩綍">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step2-output-dir')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep2()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        寮€濮嬪垎鏋?                    </button>
+
+                    <div class="progress-container" id="step2-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step2-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step2-status" class="progress-status">鍑嗗灏辩华</span>
+                            <span id="step2-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step2-message"></div>
+
+                    <div class="results" id="step2-results" style="display:none;">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            鎺ㄨ崘鍖归厤椤哄簭
+                        </h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>椤轰綅</th>
+                                        <th>绫诲埆鍚嶇О</th>
+                                        <th>娣锋穯搴?/th>
+                                    </tr>
+                                </thead>
+                                <tbody id="step2-recommendations"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="page-step3" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">姝ラ 3: 姹夋槑璺濈鍖归厤</h2>
+                    <p class="page-desc">澶氳疆姹夋槑璺濈鏈€杩戦偦鍖归厤</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 3h5v5"/>
+                                    <path d="M8 21H3v-5"/>
+                                </svg>
+                            </div>
+                            鍖归厤閰嶇疆
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">褰卞儚鍥炬枃浠跺す</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-images-folder" placeholder="閫夋嫨TIF褰卞儚鏂囦欢澶?>
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step3-images-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">鏍锋湰鏂囦欢澶?/label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-samples-folder" placeholder="閫夋嫨鏍锋湰鏂囦欢澶?>
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step3-samples-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">寰呭尮閰岰SV鏂囦欢</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-target-file" placeholder="閫夋嫨CSV鏂囦欢">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step3-target-file')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">杈撳嚭CSV鏂囦欢</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step3-output-file" placeholder="杈撳嚭鏂囦欢璺緞">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step3-output-file', true)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">鍖归厤椤哄簭</label>
+                        <div class="radio-group" id="step3-match-mode">
+                            <label class="radio-option active" data-value="default" onclick="setMatchMode('default')">
+                                <span class="radio-dot"></span>
+                                <span>浠庢楠?鍔犺浇</span>
+                            </label>
+                            <label class="radio-option" data-value="custom" onclick="setMatchMode('custom')">
+                                <span class="radio-dot"></span>
+                                <span>鑷畾涔夐『搴?/span>
+                            </label>
+                        </div>
+
+                        <!-- Default: load from step2 -->
+                        <div id="step3-match-default" class="toggle-content">
+                            <div class="match-order-list" id="step3-match-order"></div>
+                            <button class="btn-add" onclick="loadStep2Recommendations()" style="margin-top: 0.5rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <polyline points="1 4 1 10 7 10"/>
+                                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                                </svg>
+                                鍔犺浇鎺ㄨ崘椤哄簭
+                            </button>
+                        </div>
+
+                        <!-- Custom: manual entry -->
+                        <div id="step3-match-custom" class="toggle-content" style="display:none;">
+                            <div class="dynamic-list" id="step3-custom-match-list"></div>
+                            <button class="btn-add" onclick="addCustomMatchItem()" style="margin-top: 0.5rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                娣诲姞绫诲埆
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">鍖归厤杞閰嶇疆</label>
+                        <div class="dynamic-list" id="step3-rounds"></div>
+                        <button class="btn-add" onclick="addRound()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            娣诲姞杞
+                        </button>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep3()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        寮€濮嬪尮閰?                    </button>
+
+                    <div class="progress-container" id="step3-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step3-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step3-status" class="progress-status">鍑嗗灏辩华</span>
+                            <span id="step3-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step3-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="page-step4" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">姝ラ 4: ENVI鏍煎紡杞崲</h2>
+                    <p class="page-desc">CSV 鈫?TXT 鈫?ENVI 涓夋鑷姩鍖?/p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                            杞崲閰嶇疆
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">杈撳叆CSV鏂囦欢</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step4-input-csv" placeholder="閫夋嫨CSV鏂囦欢">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step4-input-csv')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">褰卞儚鍥炬枃浠跺す</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step4-images-folder" placeholder="閫夋嫨TIF褰卞儚鏂囦欢澶?>
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step4-images-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">杈撳嚭鐩綍</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step4-output-dir" placeholder="閫夋嫨杈撳嚭鐩綍">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step4-output-dir')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="step4-add-geo" checked>
+                                娣诲姞鍦扮悊鍧愭爣
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">鏈€澶у簭鍒楅暱搴︼紙鍙€夛級</label>
+                            <input type="number" class="form-input" id="step4-max-seq-length" placeholder="鐣欑┖鍒欎笉杩囨护">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep4()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        寮€濮嬭浆鎹?                    </button>
+
+                    <div class="progress-container" id="step4-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step4-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step4-status" class="progress-status">鍑嗗灏辩华</span>
+                            <span id="step4-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step4-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div id="page-step5" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">姝ラ 5: 閲嶅垎绫讳紭鍖?/h2>
+                    <p class="page-desc">灏嗘暟鍊兼槧灏勪负鍦扮墿绫诲埆鍚嶇О</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3v18"/>
+                                    <rect x="4" y="8" width="6" height="12" rx="1"/>
+                                </svg>
+                            </div>
+                            鍒嗙被閰嶇疆
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">ENVI .dat 鏂囦欢</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step5-dat-path" placeholder="閫夋嫨_dat鏂囦欢">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step5-dat-path')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">鍦扮墿绫诲埆閰嶇疆</label>
+                        <div class="dynamic-list" id="step5-classes"></div>
+                        <button class="btn-add" onclick="addLandCoverClass()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            娣诲姞绫诲埆
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">棰滆壊棰勮</label>
+                        <div class="color-preview" id="step5-color-preview"></div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep5()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        寮€濮嬮噸鍒嗙被
+                    </button>
+
+                    <div class="progress-container" id="step5-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step5-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step5-status" class="progress-status">鍑嗗灏辩华</span>
+                            <span id="step5-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step5-message"></div>
+                </div>
+            </div>
+
+            <!-- Step 6 -->
+            <div id="page-step6" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">姝ラ 6: 绮惧害璇勪环</h2>
+                    <p class="page-desc">娣锋穯鐭╅樀銆丱A銆並appa銆佺敤鎴?鐢熶骇鑰呯簿搴?/p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-title-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </div>
+                            璇勪环閰嶇疆
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">閲嶅垎绫籇AT鏂囦欢</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step6-reclass-dat" placeholder="閫夋嫨姝ラ5杈撳嚭鐨凞AT鏂囦欢">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFile('step6-reclass-dat')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">SHP楠岃瘉鏂囦欢澶?/label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step6-shp-folder" placeholder="閫夋嫨鍖呭惈楠岃瘉SHP鐨勬枃浠跺す">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step6-shp-folder')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">杈撳嚭鐩綍</label>
+                        <div class="file-input-wrapper">
+                            <input type="text" class="form-input" id="step6-output-dir" placeholder="閫夋嫨杈撳嚭鐩綍">
+                            <button class="btn btn-secondary btn-icon" onclick="browseFolder('step6-output-dir')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="runStep6()">
+                        <span class="loading white" style="display:none"></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        寮€濮嬭瘎浠?                    </button>
+
+                    <div class="progress-container" id="step6-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="step6-progress-fill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="step6-status" class="progress-status">鍑嗗灏辩华</span>
+                            <span id="step6-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-message" id="step6-message"></div>
+
+                    <div class="results" id="step6-results" style="display:none;">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            璇勪环缁撴灉
+                        </h3>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-value" id="step6-oa">--</div>
+                                <div class="metric-label">鎬讳綋绮惧害 (OA)</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="step6-kappa">--</div>
+                                <div class="metric-label">Kappa绯绘暟</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="step6-pixels">--</div>
+                                <div class="metric-label">鎬诲儚绱犳暟</div>
+                            </div>
+                        </div>
+                        <div class="table-container" style="margin-top: 1.5rem;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>绫诲埆</th>
+                                        <th>鐢熶骇鑰呯簿搴?/th>
+                                        <th>鐢ㄦ埛绮惧害</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="step6-class-accuracies"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- Pipeline Page - 鍏ㄦ祦绋嬪鐞?                -->
+            <!-- ========================================== -->
+            <div id="page-pipeline" class="page">
+                <div class="page-header">
+                    <h2 class="page-title">涓€閿叏娴佺▼澶勭悊</h2>
+                    <p class="page-desc">鑷姩涓茶仈姝ラ1-6锛屽墠涓€闃舵杈撳嚭鍗充负涓嬩竴闃舵杈撳叆</p>
+                </div>
+
+                <!-- 鎬昏繘搴﹂潰鏉匡紙鍒濆闅愯棌锛?-->
+                <div id="pipeline-progress-section" style="display:none; margin-bottom: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">鎵ц杩涘害</h3>
+                            <span id="pipeline-current-round-label" class="text-muted text-sm" style="margin-left:auto; margin-right:0.75rem;"></span>
+                            <span id="pipeline-total-percent" class="text-accent font-mono">0%</span>
+                        </div>
+                        <div class="progress-bar" style="margin-bottom: 0.5rem;">
+                            <div class="progress-fill" id="pipeline-total-progress-fill" style="width:0%"></div>
+                        </div>
+                        <div id="pipeline-total-status" class="text-muted text-sm">绛夊緟寮€濮?..</div>
+
+                        <!-- 缁堟鍘熷洜妯箙 -->
+                        <div id="pipeline-stop-banner" class="pipeline-stop-banner" style="display:none;"></div>
+
+                        <!-- 6姝ラ鐘舵€佸崱鐗?-->
+                        <div class="pipeline-steps-grid" style="margin-top: 1rem;">
+                            <div class="pipeline-step-card" id="pipeline-step-1">
+                                <div class="pipeline-step-num">01</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">褰卞儚濉厖鍚堝苟</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">绛夊緟涓?/div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-2">
+                                <div class="pipeline-step-num">02</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">鏍锋湰杩涢樁鍒嗘瀽</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">绛夊緟涓?/div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-3">
+                                <div class="pipeline-step-num">03</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">姹夋槑璺濈鍖归厤</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">绛夊緟涓?/div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-4">
+                                <div class="pipeline-step-num">04</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">ENVI鏍煎紡杞崲</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">绛夊緟涓?/div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-5">
+                                <div class="pipeline-step-num">05</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">閲嶅垎绫讳紭鍖?/div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">绛夊緟涓?/div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pipeline-step-card" id="pipeline-step-6">
+                                <div class="pipeline-step-num">06</div>
+                                <div class="pipeline-step-info">
+                                    <div class="pipeline-step-name">绮惧害璇勪环</div>
+                                    <div class="pipeline-step-msg"></div>
+                                </div>
+                                <div class="pipeline-step-right">
+                                    <div class="pipeline-step-status">绛夊緟涓?/div>
+                                    <div class="progress-bar pipeline-step-bar">
+                                        <div class="progress-fill pipeline-step-progress-fill" style="width:0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 鐘舵€佹秷鎭?-->
+                <div class="status-message" id="pipeline-message"></div>
+
+                <!-- 鍙傛暟閰嶇疆琛ㄥ崟 -->
+                <div class="step-grid" style="gap: 1.25rem;">
+
+                    <!-- 鈹€鈹€ 鍩虹璺緞閰嶇疆 鈹€鈹€ -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                鍩虹璺緞閰嶇疆
+                            </h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">褰卞儚鏂囦欢澶硅矾寰?<span class="badge-required">蹇呭～</span></label>
+                            <div class="input-with-btn">
+                                <input type="text" id="pipeline-input-img-dir" class="form-input" placeholder="鍖呭惈 .tif/.tiff/.img 褰卞儚鏂囦欢鐨勬枃浠跺す">
+                                <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-input-img-dir')">娴忚</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">杈撳嚭鏍圭洰褰?<span class="badge-required">蹇呭～</span></label>
+                            <div class="input-with-btn">
+                                <input type="text" id="pipeline-output-dir" class="form-input" placeholder="鍚勬楠よ緭鍑哄皢鑷姩鍒涘缓瀛愮洰褰?>
+                                <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-output-dir')">娴忚</button>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">杈撳嚭鏂囦欢鍚?/label>
+                                <input type="text" id="pipeline-filename" class="form-input" value="merged" placeholder="姝ラ1杈撳嚭鏂囦欢鍚?>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">鍒嗕綅鏁扮被鍒暟</label>
+                                <input type="number" id="pipeline-num-classes" class="form-input" value="5" min="2" max="20">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="pipeline-adjust-sizes" checked> 鑷姩璋冩暣涓嶅悓灏哄鐨凜SV鏂囦欢
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 鈹€鈹€ 鏁版嵁棰勫鐞嗛厤缃紙姝ラ1 + 姝ラ2锛?鈹€鈹€ -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                鏁版嵁棰勫鐞嗛厤缃?                                <span class="text-muted text-sm">姝ラ1 & 姝ラ2</span>
+                            </h3>
+                        </div>
+
+                        <!-- 姝ラ1锛氭尝娈靛垹闄?-->
+                        <div class="pipeline-subsection">
+                            <div class="pipeline-subsection-title">
+                                <span class="step-badge">1</span>
+                                娉㈡鑼冨洿鍒犻櫎
+                                <span class="text-muted text-sm" style="margin-left: auto;">鍙€?/span>
+                            </div>
+                            <div class="radio-group" id="pipeline-delete-mode">
+                                <div class="radio-option active" data-value="default" onclick="setPipelineDeleteMode(this, 'default')">
+                                    浣跨敤榛樿锛堜笉鍒犻櫎锛?                                </div>
+                                <div class="radio-option" data-value="custom" onclick="setPipelineDeleteMode(this, 'custom')">
+                                    鑷畾涔夊垹闄よ寖鍥?                                </div>
+                            </div>
+                            <div id="pipeline-custom-delete-section" style="display:none; margin-top: 0.75rem;">
+                                <div id="pipeline-delete-ranges"></div>
+                                <button type="button" class="btn-secondary btn-sm" onclick="addPipelineDeleteRange()" style="margin-top: 0.5rem;">+ 娣诲姞娉㈡鑼冨洿</button>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-divider"></div>
+
+                        <!-- 姝ラ2锛氭牱鏈厤缃?-->
+                        <div class="pipeline-subsection">
+                            <div class="pipeline-subsection-title">
+                                <span class="step-badge">2</span>
+                                鏍锋湰閰嶇疆
+                                <span class="badge-required" style="margin-left: 0.5rem;">蹇呭～</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">SHP鏍锋湰璺緞 <span class="badge-required">蹇呭～</span></label>
+                                <div class="input-with-btn">
+                                    <input type="text" id="pipeline-shp-input" class="form-input" placeholder="SHP鏂囦欢鎴栨枃浠跺す璺緞">
+                                    <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-shp-input')">娴忚</button>
+                                </div>
+                                <p class="form-hint">褰卞儚鏂囦欢灏嗕粠涓婃柟銆屽奖鍍忔枃浠跺す璺緞銆嶄腑鑷姩閫夊彇</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 鈹€鈹€ 鍖归厤涓庤浆鎹㈤厤缃紙姝ラ3 + 姝ラ4锛?鈹€鈹€ -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-9 9"/><path d="M3 21l9-9"/></svg>
+                                鍖归厤涓庤浆鎹㈤厤缃?                                <span class="text-muted text-sm">姝ラ3 & 姝ラ4</span>
+                            </h3>
+                        </div>
+
+                        <!-- 姝ラ3锛氬尮閰嶉厤缃?-->
+                        <div class="pipeline-subsection">
+                            <div class="pipeline-subsection-title">
+                                <span class="step-badge">3</span>
+                                姹夋槑璺濈鍖归厤
+                                <span class="badge-required" style="margin-left: 0.5rem;">蹇呭～</span>
+                            </div>
+                            <!-- 鐩爣CSV鏂囦欢锛氳嚜鍔ㄦ帹瀵硷紝鏃犻渶鐢ㄦ埛杈撳叆 -->
+                            <div class="form-group">
+                                <label class="form-label">鐩爣CSV鏂囦欢 <span class="badge-required">蹇呭～</span></label>
+                                <div class="input-with-btn" style="opacity:0.7;">
+                                    <input type="text" id="pipeline-target-file" class="form-input" readonly placeholder="鑷姩鎺ㄥ锛氳緭鍑烘牴鐩綍/step1/鏂囦欢鍚?csv">
+                                    <button type="button" class="btn-secondary" disabled>鑷姩</button>
+                                </div>
+                                <p class="form-hint">鐢便€岃緭鍑烘牴鐩綍銆嶅拰銆岃緭鍑烘枃浠跺悕銆嶈嚜鍔ㄦ帹瀵硷紝鍗?杈撳嚭鏍圭洰褰?step1/鏂囦欢鍚?csv</p>
+                            </div>
+
+                            <!-- 鑷姩鏇挎崲鍊奸瑙堝尯鍩?-->
+                            <div id="pipeline-replacement-preview-section" style="display:none; margin: 1rem 0;">
+                                <div class="card-header" style="padding: 0.75rem 1rem; background: var(--bg-secondary); border-radius: 8px 8px 0 0; border-bottom: 1px solid var(--border-color);">
+                                    <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                                        鑷姩鏇挎崲鍊奸瑙?                                        <span id="pipeline-classes-count" style="font-weight: normal;"></span>
+                                    </h4>
+                                </div>
+                                <div id="pipeline-replacement-preview" style="padding: 0.75rem 1rem; background: var(--bg-tertiary); border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto;">
+                                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">鍔犺浇涓?..</p>
+                                </div>
+                                <p class="form-hint" style="margin-top: 0.5rem;">
+                                    绋嬪簭灏嗘牴鎹娴嬪埌鐨勬牱鏈被鍨嬫暟閲忚嚜鍔ㄥ垎閰嶆浛鎹㈠€硷紝姣忚疆杩唬渚濇閫掑銆?                                    渚嬪锛?涓被鍒?鈫?绗?杞娇鐢?-4锛岀2杞娇鐢?-8锛屼互姝ょ被鎺ㄣ€?                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">姹夋槑璺濈鍒濆闃堝€?/label>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <input type="number" id="pipeline-initial-threshold" class="form-input"
+                                        value="0" min="0" step="1" style="width:120px;">
+                                    <span style="color:var(--text-muted); font-size:0.85rem;">姣忚疆鑷姩 +5锛堢1杞?0锛岀2杞?5锛岀3杞?10锛屸€︹€︼級</span>
+                                </div>
+                                <p class="form-hint">棣栬疆浣跨敤鍒濆闃堝€硷紝鍚庣画姣忚疆閫掑5锛屾棤闇€鎵嬪姩閰嶇疆鍚勮疆闃堝€?/p>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-divider"></div>
+
+                        <!-- 姝ラ4锛欵NVI杞崲 -->
+                        <div class="pipeline-subsection">
+                            <div class="pipeline-subsection-title">
+                                <span class="step-badge">4</span>
+                                ENVI鏍煎紡杞崲
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" id="pipeline-add-geo" checked> 娣诲姞鍦扮悊鍧愭爣淇℃伅
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">鏈€澶у簭鍒楅暱搴﹁繃婊?<span class="text-muted text-sm">锛堝彲閫夛級</span></label>
+                                <input type="number" id="pipeline-max-seq-length" class="form-input" placeholder="鐣欑┖琛ㄧず涓嶉檺鍒?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 鈹€鈹€ 鍒嗙被涓庨獙璇侀厤缃紙姝ラ5 + 姝ラ6锛?鈹€鈹€ -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 3v18"/><rect x="4" y="8" width="6" height="12" rx="1"/><rect x="14" y="4" width="6" height="16" rx="1"/></svg>
+                                鍒嗙被涓庨獙璇侀厤缃?                                <span class="text-muted text-sm">姝ラ5 & 姝ラ6</span>
+                            </h3>
+                        </div>
+
+                        <!-- 姝ラ5锛氬湴鐗╃被鍒?-->
+                        <div class="pipeline-subsection">
+                            <div class="pipeline-subsection-title">
+                                <span class="step-badge">5</span>
+                                鍦扮墿绫诲埆瀹氫箟
+                                <span class="badge-required" style="margin-left: 0.5rem;">蹇呭～</span>
+                            </div>
+                            <div id="pipeline-classes">
+                                <div class="dynamic-item class-item">
+                                    <div class="class-item-row">
+                                        <input type="text" class="class-name" placeholder="类别名称（如：水体）" value="水体" style="flex:2;">
+                                        <input type="text" class="class-values" placeholder="数值列表（如：1,2,3）" value="1,2" style="flex:2;">
+                                    </div>
+                                    <button type="button" class="btn-icon" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                </div>
+                                <div class="dynamic-item class-item">
+                                    <div class="class-item-row">
+                                        <input type="text" class="class-name" placeholder="类别名称" value="人工表面" style="flex:2;">
+                                        <input type="text" class="class-values" placeholder="数值列表" value="3,4" style="flex:2;">
+                                    </div>
+                                    <button type="button" class="btn-icon" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                </div>
+                                <div class="dynamic-item class-item">
+                                    <div class="class-item-row">
+                                        <input type="text" class="class-name" placeholder="类别名称" value="林地" style="flex:2;">
+                                        <input type="text" class="class-values" placeholder="数值列表" value="5,6" style="flex:2;">
+                                    </div>
+                                    <button type="button" class="btn-icon" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                </div>
+                                <div class="dynamic-item class-item">
+                                    <div class="class-item-row">
+                                        <input type="text" class="class-name" placeholder="类别名称" value="耕地" style="flex:2;">
+                                        <input type="text" class="class-values" placeholder="数值列表" value="7,8" style="flex:2;">
+                                    </div>
+                                    <button type="button" class="btn-icon" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-secondary btn-sm" onclick="addPipelineClass()" style="margin-top:0.5rem;">+ 添加类别</button>
+                            <p class="form-hint" style="margin-top:0.5rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="display:inline;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                冻结策略（全局固定）：每类连续 2 轮 PA 增幅 &lt; 0.5% 时自动冻结，冻结后不再参与汉明距离匹配。
+                            </p>
+                        </div>
+
+                        <div class="pipeline-divider"></div>
+
+                        <!-- 姝ラ6锛氱簿搴﹁瘎浠?-->
+                        <div class="pipeline-subsection">
+                            <div class="pipeline-subsection-title">
+                                <span class="step-badge">6</span>
+                                绮惧害璇勪环閰嶇疆
+                                <span class="badge-required" style="margin-left: 0.5rem;">蹇呭～</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">楠岃瘉SHP鏂囦欢澶?<span class="badge-required">蹇呭～</span></label>
+                                <div class="input-with-btn">
+                                    <input type="text" id="pipeline-shp-folder" class="form-input" placeholder="楠岃瘉鏍锋湰SHP鏂囦欢澶硅矾寰?>
+                                    <button type="button" class="btn-secondary" onclick="browseFolder('pipeline-shp-folder')">娴忚</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 鈹€鈹€ 杩唬鎺у埗鍙傛暟 鈹€鈹€ -->
+                    <div class="card card-iteration">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                                杩唬鎺у埗 路 缁堟鏉′欢
+                            </h3>
+                        </div>
+                        <p class="form-hint" style="margin-bottom:1rem;">
+                            姝ラ3-6 灏嗗惊鐜凯浠ｏ紝姣忚疆瀹屾垚绮惧害璇勪环鍚庝緷娆″垽鏂粓姝㈡潯浠讹細<br>
+                            鈶?Kappa绯绘暟 鈮?闃堝€?鈫?缁堟 &nbsp;|&nbsp; 鈶?鏈垎绫诲儚绱犳瘮渚?鈮?闃堝€?鈫?缁堟 &nbsp;|&nbsp; 鈶?绫诲埆杈惧埌鍐荤粨鏉′欢 鈫?璇ョ被鍒笉鍐嶅弬涓庡悗缁尮閰?&nbsp;|&nbsp; 鈶?杈惧埌鏈€澶ц疆娆?鈫?寮哄埗缁堟
+                        </p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                                    Kappa 缁堟闃堝€?                                </label>
+                                <input type="number" id="pipeline-kappa-threshold"
+                                       class="form-input" value="0.8" min="0" max="1" step="0.01"
+                                       placeholder="0.80">
+                                <p class="form-hint">Kappa 鈮?姝ゅ€兼椂缁堟锛堥粯璁?0.80锛?/p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    鏈垎绫诲儚绱犳瘮渚嬮槇鍊硷紙%锛?                                </label>
+                                <input type="number" id="pipeline-unclassified-threshold"
+                                       class="form-input" value="10" min="0" max="100" step="0.5"
+                                       placeholder="10.0">
+                                <p class="form-hint">鏈垎绫诲儚绱?鈮?姝ゆ瘮渚嬫椂缁堟锛堥粯璁?10%锛?/p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    鏈€澶ц凯浠ｈ疆娆?                                </label>
+                                <input type="number" id="pipeline-max-iterations"
+                                       class="form-input" value="10" min="1" max="50" step="1"
+                                       placeholder="10">
+                                <p class="form-hint">杈惧埌姝よ疆娆″悗寮哄埗缁堟锛堥粯璁?10锛?/p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /step-grid -->
+
+                <!-- 鎵ц鎸夐挳 -->
+                <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+                    <button id="pipeline-run-btn" class="btn-primary btn-lg" onclick="runPipeline()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        鍚姩鍏ㄦ祦绋嬪鐞?                    </button>
+                </div>
+
+                <!-- 鏈€缁堢粨鏋滈潰鏉?-->
+                <!-- 杞杩唬鍘嗗彶琛?-->
+                <div id="pipeline-rounds-section" style="display:none; margin-top: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                                鍚勮疆娆¤瘎浠风粨鏋?                            </h3>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>杞</th>
+                                    <th>姹夋槑闃堝€?/th>
+                                    <th>Kappa 绯绘暟</th>
+                                    <th>鎬讳綋绮惧害 OA</th>
+                                    <th>鏈垎绫诲儚绱犳瘮渚?/th>
+                                    <th>鏇挎崲鍊?/th>
+                                    <th>绫诲埆鐘舵€?/th>
+                                    <th>缁堟</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipeline-rounds-history"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 鏈€缁堢簿搴︾粨鏋滈潰鏉?-->
+                <div id="pipeline-results" style="display:none; margin-top: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">鏈€缁堣疆绮惧害璇勪环缁撴灉</h3>
+                        </div>
+                        <div class="stats-row" style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <div class="stat-card" style="flex:1; min-width:120px;">
+                                <div class="stat-value" id="pipeline-oa">--</div>
+                                <div class="stat-label">鎬讳綋绮惧害 OA</div>
+                            </div>
+                            <div class="stat-card" style="flex:1; min-width:120px;">
+                                <div class="stat-value" id="pipeline-kappa">--</div>
+                                <div class="stat-label">Kappa 绯绘暟</div>
+                            </div>
+                            <div class="stat-card" style="flex:1; min-width:120px;">
+                                <div class="stat-value" id="pipeline-pixels">--</div>
+                                <div class="stat-label">鎬诲儚绱犳暟</div>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>绫诲埆</th><th>鐢熶骇鑰呯簿搴?/th><th>鐢ㄦ埛绮惧害</th></tr>
+                            </thead>
+                            <tbody id="pipeline-class-accuracies"></tbody>
+                        </table>
+                    </div>
+                    <!-- 杈撳嚭璺緞姹囨€?-->
+                    <div class="card" style="margin-top:1rem;">
+                        <div class="card-header">
+                            <h3 class="card-title">杈撳嚭鏂囦欢璺緞</h3>
+                        </div>
+                        <div id="pipeline-outputs" class="output-paths-list"></div>
+                    </div>
+                </div>
+
+            </div><!-- /page-pipeline -->
+
+        </main>
+    </div>
+
+    <!-- Task Monitor -->
+    <div class="task-monitor" id="task-monitor">
+        <div class="task-monitor-header">
+            <span>澶勭悊涓?/span>
+            <button onclick="hideTaskMonitor()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="task-monitor-body">
+            <div id="task-monitor-content">
+                <div class="task-monitor-status">鍑嗗灏辩华</div>
+                <div class="progress-bar" style="margin-top: 0.5rem;">
+                    <div class="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/config.js"></script>
+    <script src="/static/js/navigation.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/forms.js"></script>
+    <script src="/static/js/steps.js"></script>
+    <script src="/static/js/pipeline.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

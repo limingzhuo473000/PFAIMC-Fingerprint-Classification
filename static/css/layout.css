@@ -1,0 +1,183 @@
+/**
+ * Layout Styles - 布局样式
+ * 主要布局结构：背景、侧边栏、主内容区
+ */
+
+/* ============================================
+   Background Effects
+   ============================================ */
+
+.bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bg-gradient {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(20, 184, 166, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ============================================
+   App Container
+   ============================================ */
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    z-index: var(--z-base);
+}
+
+/* ============================================
+   Sidebar
+   ============================================ */
+
+.sidebar {
+    width: 280px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: var(--z-sidebar);
+}
+
+.sidebar-header {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border);
+}
+
+/* Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--gradient-card);
+    border: 1px solid var(--border-accent);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-glow);
+}
+
+.logo-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+}
+
+.logo-text h1 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.logo-text span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'Geist Mono', monospace;
+}
+
+/* Navigation Section */
+.nav-section {
+    padding: var(--space-md) 0.75rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.nav-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--border);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================
+   Main Content
+   ============================================ */
+
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: var(--space-xl);
+}
+
+/* ============================================
+   Responsive Layout
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+    .main-content {
+        margin-left: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--transition-normal);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.pyc
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Runtime / temp
+temp_classification/
+*.log
+*.tmp
+.cuda_cache/
+.cupy_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
