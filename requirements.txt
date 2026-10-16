@@ -29,8 +29,12 @@ chardet>=5.0.0
 # 进度条
 tqdm>=4.65.0
 
-# GPU加速（可选，需要NVIDIA显卡）
-cupy-cuda12x[ctk]>=14.0.0
+# GPU加速（可选，需要NVIDIA显卡 + 可用的CUDA驱动）
+# 2026-09-18 卸载：本机 CuPy 无法完成 NVRTC 内核编译（USE_GPU 恒为 False），
+# 实际始终走 CPU 多进程；而该依赖会连带安装约 2.26 GB 的 nvidia-* CUDA 运行库。
+# 如需恢复 GPU 加速，取消下面一行注释后执行：
+#   venv\Scripts\python.exe -m pip install cupy-cuda12x[ctk]
+# cupy-cuda12x[ctk]>=14.0.0
 
 # 开发工具
 python-multipart>=0.0.6

@@ -66,16 +66,22 @@ class _Step3PausedSignal(Exception):
 # ============================================================
 
 def _build_ref_arrays(all_reference_sequences, current_replacements, target_sequence_length,
-                      distance_metric='hamming'):
+                      distance_metric='hamming', hamming_tolerance=0.0):
     """
     将 Python list 格式的参考序列转换为 NumPy 数组，便于向量化计算。
 
     参数:
         distance_metric: 距离度量，'hamming'（汉明距离，整数编码）或
             'euclidean'（欧氏距离，连续数值，消融实验2）
+        hamming_tolerance: 汉明距离的容差 ε（仅在 distance_metric='hamming' 时生效）。
+            0 = 严格逐位相等判定（经典汉明距离）；
+            >0 = ε-容差汉明：|ref - current| <= ε 即视为该波段"相等"，不计入距离。
+            用于消融实验1（跳过离散化）：连续浮点序列用严格相等判定会导致
+            距离恒等于序列长度、任何阈值下都无法匹配（OA=0），必须放宽为容差判定。
+            建议先对连续值做逐波段标准化，此时 ε 的单位为标准差。
 
     返回:
-        ref_matrix:  (total_refs, seq_len)  hamming→np.int16 / euclidean→np.float32
+        ref_matrix:  (total_refs, seq_len)  hamming→np.int16 / euclidean 或 ε>0→np.float32
         repl_ids:    (total_refs,)          np.int32  每个参考序列对应的 replacement 索引
         uniq_repls:  list[str]              去重后的 replacement 值列表（按原始出现顺序）
     """
@@ -114,8 +120,18 @@ def _build_ref_arrays(all_reference_sequences, current_replacements, target_sequ
     if not ref_list:
         return None, None, uniq_repls
 
+
+    _use_tol = (distance_metric == 'hamming' and hamming_tolerance > 0)
+
     if distance_metric == 'euclidean':
         # 欧氏距离模式（消融实验2）：参考序列保持连续数值，用 float32 存储
+        ref_matrix = np.array(ref_list, dtype=np.float32)   # (total_refs, seq_len)
+    elif _use_tol:
+        # ε-容差汉明（消融实验1的配套判定）：需要做减法比较，必须用 float32
+        print(
+            f"[步骤3] ε-容差汉明距离: ε={hamming_tolerance}，参考矩阵改用 float32",
+            flush=True
+        )
         ref_matrix = np.array(ref_list, dtype=np.float32)   # (total_refs, seq_len)
     else:
         # 汉明距离模式：离散整数编码用 int16 存储；
@@ -140,53 +156,56 @@ def _build_ref_arrays(all_reference_sequences, current_replacements, target_sequ
 
 def _match_block_vectorized(row_indices, data_rows, target_sequence_length,
                           ref_matrix, repl_ids, uniq_repls, threshold,
-                          use_gpu=False, distance_metric='hamming'):
+                          use_gpu=False, distance_metric='hamming',
+                          hamming_tolerance=0.0):
     """
     多进程 worker：使用向量化计算距离（自动选择CPU/GPU、汉明/欧氏距离）
 
     参数:
         use_gpu: 是否使用GPU加速
         distance_metric: 'hamming'（汉明距离，整数编码）或 'euclidean'（欧氏距离，消融实验2）
+        hamming_tolerance: 汉明距离容差 ε，>0 时逐波段判定放宽为 |ref-current| <= ε 即相等
 
     返回: [(row_idx, new_row, empty_count, ambiguous_count, modified_count), ...]
     """
     import numpy as np
+    _tol = float(hamming_tolerance) if hamming_tolerance else 0.0
 
     if use_gpu:
         try:
             import cupy as cp
-
+            
             # 将数据移到GPU
             if not isinstance(ref_matrix, cp.ndarray):
                 ref_matrix_gpu = cp.asarray(ref_matrix)
             else:
                 ref_matrix_gpu = ref_matrix
-
+            
             if not isinstance(repl_ids, cp.ndarray):
                 repl_ids_gpu = cp.asarray(repl_ids)
             else:
                 repl_ids_gpu = repl_ids
-
+            
             results = []
             total_refs = ref_matrix_gpu.shape[0] if ref_matrix_gpu is not None else 0
-
+            
             for row_idx, row in zip(row_indices, data_rows):
                 new_row = list(row)
                 empty_assigned = 0
                 ambiguous_count = 0
                 modified_count = 0
-
+                
                 for col_idx, cell in enumerate(row):
                     if not cell.strip():
                         new_row[col_idx] = "-1"
                         empty_assigned += 1
                         continue
-
+                    
                     try:
                         vals = cell.split()
                         if len(vals) != target_sequence_length:
                             continue
-
+                        
                         # GPU上的数组构建：dtype 跟随参考矩阵
                         # （int16=离散编码，float32=欧氏距离或跳过离散化的连续数值）
                         if ref_matrix_gpu.dtype == cp.float32:
@@ -203,57 +222,61 @@ def _match_block_vectorized(row_indices, data_rows, target_sequence_length,
                             )
                     except ValueError:
                         continue
-
+                    
                     if total_refs == 0:
                         continue
-
+                    
                     # ── GPU上向量化距离计算 ──
                     if distance_metric == 'euclidean':
                         # 欧氏距离（消融实验2）：sqrt(Σ(ref-current)^2)
                         diff = ref_matrix_gpu - current_arr
                         dists = cp.sqrt((diff * diff).sum(axis=1))
+                    elif _tol > 0:
+                        # ε-容差汉明（消融实验1）：|ref-current| > ε 才计入不一致波段数
+                        # 距离仍为「不一致波段数」，量纲与经典汉明一致（整数计数）
+                        dists = (cp.abs(ref_matrix_gpu - current_arr) > _tol).sum(axis=1)
                     else:
                         # 汉明距离：逐位不等计数
                         dists = cp.not_equal(ref_matrix_gpu, current_arr).sum(axis=1)
                     min_dist = float(cp.min(dists).get())  # 传回CPU
-
+                    
                     if min_dist > threshold:
                         continue
-
+                    
                     # 找出所有最小距离的索引
                     min_mask = dists == min_dist
                     matched_repl_ids = cp.unique(repl_ids_gpu[min_mask]).get()
-
+                    
                     if len(matched_repl_ids) > 1:
                         ambiguous_count += 1
                         continue
-
+                    
                     new_row[col_idx] = uniq_repls[int(matched_repl_ids[0])]
                     modified_count += 1
-
+                
                 results.append((row_idx, new_row, empty_assigned, ambiguous_count, modified_count))
             return results
-
+            
         except Exception as e:
             print(f"[GPU加速] GPU计算失败，回退到CPU: {e}")
             # 回退到CPU版本
-
+    
     # CPU版本（NumPy）
     results = []
     total_refs = ref_matrix.shape[0] if ref_matrix is not None else 0
-
+    
     for row_idx, row in zip(row_indices, data_rows):
         new_row = list(row)
         empty_assigned = 0
         ambiguous_count = 0
         modified_count = 0
-
+        
         for col_idx, cell in enumerate(row):
             if not cell.strip():
                 new_row[col_idx] = "-1"
                 empty_assigned += 1
                 continue
-
+            
             try:
                 vals = cell.split()
                 if len(vals) != target_sequence_length:
@@ -273,34 +296,38 @@ def _match_block_vectorized(row_indices, data_rows, target_sequence_length,
                     )
             except ValueError:
                 continue
-
+            
             if total_refs == 0:
                 continue
-
+            
             # ── 向量化距离计算 ──
             if distance_metric == 'euclidean':
                 # 欧氏距离（消融实验2）：sqrt(Σ(ref-current)^2)
                 diff = ref_matrix - current_arr
                 dists = np.sqrt((diff * diff).sum(axis=1))
+            elif _tol > 0:
+                # ε-容差汉明（消融实验1）：|ref-current| > ε 才计入不一致波段数
+                # 距离仍为「不一致波段数」，量纲与经典汉明一致（整数计数）
+                dists = (np.abs(ref_matrix - current_arr) > _tol).sum(axis=1)
             else:
                 # 汉明距离：逐位不等计数
                 dists = np.not_equal(ref_matrix, current_arr).sum(axis=1)
             min_dist = float(dists.min())
-
+            
             if min_dist > threshold:
                 continue
-
+            
             # 找出所有最小距离的索引
             min_mask = dists == min_dist
             matched_repl_ids = np.unique(repl_ids[min_mask])
-
+            
             if matched_repl_ids.size > 1:
                 ambiguous_count += 1
                 continue
-
+            
             new_row[col_idx] = uniq_repls[int(matched_repl_ids[0])]
             modified_count += 1
-
+        
         results.append((row_idx, new_row, empty_assigned, ambiguous_count, modified_count))
     return results
     results = []
@@ -373,34 +400,35 @@ def _match_round_gpu_batch(
     task_id=None,             # 任务ID
     progress_callback=None,   # 进度回调 fn(progress, message)
     distance_metric='hamming',  # 距离度量: 'hamming' / 'euclidean'（消融实验2）
+    hamming_tolerance=0.0,    # 汉明距离容差 ε（>0 时对连续值启用容差判定，消融实验1）
 ):
     """
     GPU批量匹配 - 一整轮匹配的核心GPU加速函数
-
+    
     策略:
     1. 收集所有非空单元格，构建为NumPy矩阵
     2. 调用GPU批量距离计算（汉明/欧氏）
     3. 根据阈值和歧义检查，写回结果
-
+    
     返回:
         (modified_in_round, empty_assigned_in_round, ambiguous_in_round)
     """
     from scripts.gpu_optimize import batch_hamming_distance_gpu, estimate_batch_size, USE_GPU, cp as _cp
-
+    
     if not USE_GPU or _cp is None:
         raise RuntimeError("GPU not available, should use CPU path")
-
+    
     n_refs = ref_matrix.shape[0]
     if n_refs == 0:
         return 0, 0, 0
-
+    
     seq_len = target_sequence_length
-
+    
     # ── Step 1: 收集所有待匹配单元格 ──
     cell_positions = []  # [(row_idx, col_idx), ...]
     cell_values = []     # [str, str, ...]
     empty_count = 0
-
+    
     for row_idx, row in enumerate(modified_data):
         for col_idx, cell in enumerate(row):
             if not cell.strip():
@@ -421,11 +449,11 @@ def _match_round_gpu_batch(
                 cell_values.append(cell)
             except ValueError:
                 continue
-
+    
     n_cells = len(cell_positions)
     if n_cells == 0:
         return 0, empty_count, 0
-
+    
     # ── Step 2: 构建像元矩阵（dtype 与参考矩阵一致） ──
     if ref_matrix.dtype == np.float32:
         cells_matrix = np.empty((n_cells, seq_len), dtype=np.float32)
@@ -437,11 +465,11 @@ def _match_round_gpu_batch(
         for i, cell in enumerate(cell_values):
             vals = cell.split()
             cells_matrix[i] = [int(float(v)) for v in vals]
-
+    
     # ── Step 3: 估算批量大小（欧氏距离中间张量为float32，显存占用更大） ──
     batch_size = estimate_batch_size(n_refs, seq_len, safety_factor=0.6,
                                      distance_metric=distance_metric)
-
+    
     # ── Step 4: GPU批量计算 ──
     def _gpu_progress(current, total):
         if progress_callback:
@@ -451,14 +479,15 @@ def _match_round_gpu_batch(
             _task = task_manager.get_task(task_id)
             if _task and _task.status.value == 'paused':
                 raise _Step3PausedSignal()
-
+    
     try:
         result = batch_hamming_distance_gpu(
             cells_matrix, ref_matrix, repl_ids,
             batch_size=batch_size,
             threshold=threshold,
             progress_callback=_gpu_progress,
-            distance_metric=distance_metric
+            distance_metric=distance_metric,
+            hamming_tolerance=hamming_tolerance,
         )
     except _Step3PausedSignal:
         raise
@@ -574,6 +603,7 @@ def run_step3(
     execution_mode: str = 'multiprocess',
     num_processes: int = 0,
     distance_metric: str = 'hamming',
+    hamming_tolerance: float = 0.0,
 ) -> dict:
     """
     执行步骤3处理（NumPy 向量化优化版）
@@ -583,6 +613,11 @@ def run_step3(
         distance_metric: 距离度量，'hamming'（默认，汉明距离）或
             'euclidean'（欧氏距离，消融实验2）。欧氏模式下序列保持连续数值，
             阈值语义为连续距离值而非整数位差数。
+        hamming_tolerance: 汉明距离容差 ε（仅 hamming 模式生效，默认 0）。
+            消融实验1（跳过离散化）必须配合 ε>0：连续浮点序列用严格相等判定时
+            距离恒等于序列长度，任何阈值下都不会命中。
+            ε>0 时逐波段判定为 |ref - current| <= ε 即相等，距离仍是不一致波段数，
+            阈值语义与经典汉明一致。建议输入序列先做逐波段标准化，此时 ε 单位为标准差。
     """
     def update_progress(progress: float, message: str):
         task_manager.update_task(task_id, progress=progress, message=message)
@@ -594,8 +629,23 @@ def run_step3(
         if image_count == 0:
             return {"success": False, "error": "未找到影像文件"}
 
-        target_sequence_length = image_count
-        update_progress(10, f"检测到序列长度: {target_sequence_length}")
+        # ★ 关键修复：序列长度以 merged.csv 的实际长度为权威。
+        #   优先从 step1 写的 .meta.json 读；其次从 merged.csv 第一格推断；
+        #   最后才退回 count_total_bands / 文件数。
+        #   这样无论 Sentinel（111→127）/Landsat（340→实际可能335）都自动对齐。
+        from scripts.process01 import resolve_required_sequence_length
+        target_sequence_length, length_source = resolve_required_sequence_length(
+            experiment_data_path=target_file,
+            tif_folder=images_folder,
+        )
+        if target_sequence_length == 0:
+            target_sequence_length = image_count
+            length_source = f"图片数兜底({images_folder})"
+        update_progress(10, f"检测到序列长度: {target_sequence_length} ← {length_source}")
+        print(
+            f"[步骤3] ★ 序列长度={target_sequence_length} ← {length_source}",
+            flush=True,
+        )
 
         # 读取待匹配文件
         update_progress(15, "读取待匹配文件...")
@@ -846,7 +896,8 @@ def run_step3(
             # ── 关键优化：预构建 NumPy 参考矩阵 ──
             ref_matrix, repl_ids, uniq_repls = _build_ref_arrays(
                 all_reference_sequences, current_replacements, target_sequence_length,
-                distance_metric=distance_metric
+                distance_metric=distance_metric,
+                hamming_tolerance=hamming_tolerance,
             )
 
             # ── GPU可用性检测 ──
@@ -878,7 +929,8 @@ def run_step3(
                             35 + round_num / len(rounds) * 50 + pct * 50 / len(rounds),
                             f"第 {round_num + 1} 轮 {msg}"
                         ),
-                        distance_metric=distance_metric
+                        distance_metric=distance_metric,
+                        hamming_tolerance=hamming_tolerance,
                     )
                 except _Step3PausedSignal:
                     raise
@@ -905,7 +957,8 @@ def run_step3(
                     results = _match_block_vectorized(
                         list(range(len(modified_data))), modified_data,
                         target_sequence_length, ref_matrix, repl_ids, uniq_repls, threshold,
-                        use_gpu=False, distance_metric=distance_metric
+                        use_gpu=False, distance_metric=distance_metric,
+                        hamming_tolerance=hamming_tolerance,
                     )
                     for row_idx, new_row, empty_count, ambiguous_count, modified_count in results:
                         modified_data[row_idx] = new_row
@@ -933,7 +986,8 @@ def run_step3(
                                 _match_block_vectorized, row_indices, data_rows,
                                 target_sequence_length, ref_matrix, repl_ids,
                                 uniq_repls, threshold,
-                                use_gpu=False, distance_metric=distance_metric
+                                use_gpu=False, distance_metric=distance_metric,
+                                hamming_tolerance=hamming_tolerance,
                             )
                             futures.append(future)
 
@@ -981,9 +1035,38 @@ def run_step3(
         # 保存最终结果
         update_progress(95, "保存最终结果...")
         os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
+        
+        # ★ 关键修复：确保所有数值单元格保持整数格式，避免浮点数精度问题
+        def _format_cell(cell):
+            """格式化单元格值：将浮点数格式的字符串转换为整数格式"""
+            if not isinstance(cell, str):
+                cell = str(cell)
+            cell = cell.strip()
+            if not cell:
+                return cell
+            # 检查是否为纯数字（可能包含小数点）
+            try:
+                # 尝试转换为float再转int，去除不必要的小数部分
+                float_val = float(cell)
+                int_val = int(float_val)
+                # 如果转换后值相等，使用整数格式
+                if float_val == int_val:
+                    return str(int_val)
+                # 否则保留原始值（可能是真正的浮点数）
+                return cell
+            except (ValueError, OverflowError):
+                # 非数字值，保持原样
+                return cell
+        
+        # 格式化所有数据行
+        formatted_data = []
+        for row in modified_data:
+            formatted_row = [_format_cell(cell) for cell in row]
+            formatted_data.append(formatted_row)
+        
         with open(output_file, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            writer.writerows(modified_data)
+            writer.writerows(formatted_data)
 
         update_progress(100, "匹配完成!")
 

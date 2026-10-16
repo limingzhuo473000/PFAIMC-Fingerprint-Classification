@@ -266,6 +266,101 @@ function handleStepError(stepNum, data) {
 /**
  * 运行步骤1
  */
+/**
+ * 消融实验1：步骤1「跳过离散化」开关联动
+ * 勾选后自动勾上逐波段标准化（连续数值下反射率波段量级会压倒指数波段）
+ */
+function onStep1SkipDiscretizationChange(el) {
+    const norm = document.getElementById('step1-normalize-continuous');
+    if (el.checked && norm && !norm.checked) {
+        norm.checked = true;
+    }
+}
+
+// ============================================
+// 零值开关（含 0 值 / 排除 0 值）
+// ============================================
+
+const ZERO_SWITCH_HINTS = {
+    on:  '<b>开关打开 = 含 0 值</b>：0 一并计入分位数统计，等级严格等分，背景自然独占等级 1 —— 与 92.66% 历史高精度实验口径一致。实测（124036 全时相 2 级离散）：评价样本 98.17%；实验样本_7月版 含0 = 95.71% vs 排除0 = 89.91%（<b>+5.80pp</b>）。注意：指数波段（NDBI/NDWI 等）的 0 与负值是合法观测值而非背景，此时开关应保持打开。',
+    off: '<b>开关关闭 = 排除 0 值</b>：分位数统计只取 &gt;0 的值，0 与负值均不参与，分位点只反映有效地物、有效地物独占完整等级分辨率。实测（124036 全时相 2 级离散）：实验样本_7月版 89.91%（低于含 0 值的 95.71%）；评价样本 98.17%。仅在 0/负值确实代表背景、且有效地物量级偏小时考虑关闭。',
+    auto:'<b>自动择优</b>：按采样统计的 0 值占比与等级占用情况自动判定，判定依据会写入 step1/merged.csv.meta.json。'
+};
+
+/**
+ * 零值开关切换（含 0 ↔ 排除 0）
+ * @param {string} scope - 'step1' | 'pipeline'
+ */
+function onZeroSwitchChange(scope) {
+    const sw   = document.getElementById(scope + '-zero-switch');
+    const auto = document.getElementById(scope + '-zero-auto');
+    if (!sw) return;
+    // 手动拨动开关时，取消「自动择优」
+    if (auto && auto.checked) auto.checked = false;
+    syncZeroSwitchUI(scope);
+}
+
+/**
+ * 「自动择优」勾选联动
+ * @param {string} scope - 'step1' | 'pipeline'
+ */
+function onZeroAutoChange(scope) {
+    const sw   = document.getElementById(scope + '-zero-switch');
+    const auto = document.getElementById(scope + '-zero-auto');
+    if (!sw || !auto) return;
+    // 自动模式下开关置灰，由后端决定
+    sw.disabled = auto.checked;
+    syncZeroSwitchUI(scope);
+}
+
+/**
+ * 同步零值开关的文案与提示
+ * @param {string} scope - 'step1' | 'pipeline'
+ */
+function syncZeroSwitchUI(scope) {
+    const sw   = document.getElementById(scope + '-zero-switch');
+    const auto = document.getElementById(scope + '-zero-auto');
+    const txt  = document.getElementById(scope + '-zero-switch-text');
+    const hint = document.getElementById(scope + '-zero-hint');
+    if (!sw || !txt || !hint) return;
+
+    const isAuto = auto && auto.checked;
+    if (isAuto) {
+        txt.textContent = '自动择优（后端判定）';
+        txt.className = 'switch-text auto';
+        hint.innerHTML = ZERO_SWITCH_HINTS.auto;
+    } else {
+        const on = sw.checked;
+        txt.textContent = on ? '含 0 值（0 参与分位数统计）'
+                             : '排除 0 值（只取 >0 的值）';
+        txt.className = 'switch-text' + (on ? '' : ' off');
+        hint.innerHTML = on ? ZERO_SWITCH_HINTS.on : ZERO_SWITCH_HINTS.off;
+    }
+}
+
+/**
+ * 读取零值开关当前值，返回后端 zero_policy 枚举
+ * @param {string} scope - 'step1' | 'pipeline'
+ * @returns {string} 'auto' | 'include' | 'exclude'
+ */
+function getZeroPolicy(scope) {
+    const sw   = document.getElementById(scope + '-zero-switch');
+    const auto = document.getElementById(scope + '-zero-auto');
+    if (auto && auto.checked) return 'auto';
+    if (!sw) return 'include';
+    return sw.checked ? 'include' : 'exclude';
+}
+
+// 页面加载后初始化两个面板的开关状态
+document.addEventListener('DOMContentLoaded', function () {
+    ['step1', 'pipeline'].forEach(function (scope) {
+        const auto = document.getElementById(scope + '-zero-auto');
+        const sw   = document.getElementById(scope + '-zero-switch');
+        if (auto && sw) sw.disabled = auto.checked;
+        syncZeroSwitchUI(scope);
+    });
+});
+
 async function runStep1() {
     const input = document.getElementById('step1-input-img-dir');
     const output = document.getElementById('step1-output-dir');
@@ -303,7 +398,9 @@ async function runStep1() {
             numClasses: parseInt(numClasses.value),
             deleteRanges: deleteRanges,
             adjustSizes: document.getElementById('step1-adjust-sizes').checked,
-            skipDiscretization: !!(document.getElementById('step1-skip-discretization') && document.getElementById('step1-skip-discretization').checked)  // 消融实验1
+            skipDiscretization: !!(document.getElementById('step1-skip-discretization') && document.getElementById('step1-skip-discretization').checked),  // 消融实验1
+            normalizeContinuous: !!(document.getElementById('step1-normalize-continuous') && document.getElementById('step1-normalize-continuous').checked),  // 消融实验1配套：逐波段标准化
+            zeroPolicy:           getZeroPolicy('step1')  // 零值开关：含0=include / 排除0=exclude / 自动=auto
         });
 
         // 开始轮询状态
@@ -470,7 +567,8 @@ async function runStep3() {
             outputFile: outputFile.value,
             matchOrder: matchOrder,
             rounds: rounds,
-            distanceMetric: distanceMetric  // 消融实验2：距离度量选择
+            distanceMetric: distanceMetric,  // 消融实验2：距离度量选择
+            hammingTolerance: parseFloat(document.getElementById('step3-hamming-tolerance')?.value || '0') || 0  // 消融实验1配套：汉明容差 ε
         });
 
         TaskAPI.pollStatus(

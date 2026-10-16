@@ -245,6 +245,14 @@ async def pause_task(task_id: str):
 async def resume_task(task_id: str):
     """Resume a paused task — signal the background task to continue."""
     from backend.routers.pipeline import signal_resume, PauseAction
+    task = task_manager.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=400, detail="Task not found (server may have restarted)")
+    if task.status != TaskStatus.PAUSED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Task is not paused (status: {task.status.value})"
+        )
     if signal_resume(task_id, PauseAction.RESUME):
         return {"message": "Task resumed", "task_id": task_id}
     raise HTTPException(status_code=400, detail="Task not found or not paused")

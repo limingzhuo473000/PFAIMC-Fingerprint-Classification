@@ -150,7 +150,9 @@ const StepsAPI = {
             num_classes: params.numClasses,
             delete_ranges: params.deleteRanges,
             adjust_sizes: params.adjustSizes,
-            skip_discretization: !!params.skipDiscretization  // 消融实验1：跳过离散化
+            skip_discretization: !!params.skipDiscretization,  // 消融实验1：跳过离散化
+            normalize_continuous: !!params.normalizeContinuous,  // 消融实验1配套：逐波段标准化
+            zero_policy:          params.zeroPolicy || 'include'  // 分位数统计 0 值处理策略 include/exclude/auto（默认 include，与 92.66% 历史实验一致）
         });
     },
 
@@ -181,7 +183,8 @@ const StepsAPI = {
             output_file: params.outputFile,
             match_order: params.matchOrder,
             rounds: params.rounds,
-            distance_metric: params.distanceMetric || 'hamming'  // 消融实验2：hamming/euclidean
+            distance_metric: params.distanceMetric || 'hamming',  // 消融实验2：hamming/euclidean
+            hamming_tolerance: params.hammingTolerance || 0       // 消融实验1配套：汉明容差 ε
         });
     },
 

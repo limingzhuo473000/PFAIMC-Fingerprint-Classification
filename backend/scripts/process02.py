@@ -183,7 +183,21 @@ def _extract_single_shp(args):
                     val = band[row, col]
                     is_nodata = False
                     if nodata is not None:
-                        is_nodata = bool(np.isclose(float(val), float(nodata)))
+                        _nod = float(nodata)
+                        # ★ 2026-09-30 修复：数值型 nodata 与合法 0 值冲突
+                        #   旧写法 np.isclose(float(val), float(nodata)) 在 nodata=0.0 时
+                        #   会把合法的 0 值（如 NDBI 恰好等于 0，即 NIR==SWIR1）误判为
+                        #   NoData 而剔除，导致该样本点序列长度少 1 位（199≠200）
+                        #   被 filter_by_sequence_length 整体丢弃。
+                        #   实测影响：评价样本人工表面 52 → 51 点。
+                        #   修法：仅当 nodata 是显式 NaN，或 val 本身为 NaN 时才判 NaN；
+                        #   数值型 nodata 只在 val 与其"非零"相等时才算命中。
+                        if np.isnan(_nod):
+                            is_nodata = bool(np.isnan(float(val)))
+                        elif np.isnan(float(val)):
+                            is_nodata = False   # val 为 NaN 由后续序列长度过滤处理
+                        else:
+                            is_nodata = (float(val) == _nod) and (_nod != 0.0)
                     if not is_nodata:
                         pixel_values[idx_geom] = int(val)
 
@@ -772,12 +786,24 @@ def run_step2(
         os.makedirs(output_dir, exist_ok=True)
 
         # 获取序列长度
-        update_progress(5, "统计TIF文件数量...")
-        required_length = count_tif_files(tif_folder)
+        update_progress(5, "统计影像波段数...")
+        # ★ 关键修复：以 merged.csv 的实际序列长度为权威来源（而不是文件系统计数）。
+        #   哨兵：111文件→127子波段→127 CSV → 长度=127 ✓
+        #   Landsat：340文件→340子波段→实际可能只有 335 CSV 成功 → 长度=335 ✓
+        #   旧逻辑：count_total_bands 数的是 340，会把 merged.csv 的 335 长 cell 全部
+        #   strict-check 掉，导致所有样本返回 None。
+        from scripts.process01 import resolve_required_sequence_length
+        required_length, length_source = resolve_required_sequence_length(
+            experiment_data_path=experiment_data_path,
+            tif_folder=tif_folder,
+        )
         if required_length == 0:
-            return {"success": False, "error": "未找到TIF文件"}
-
-        update_progress(10, f"检测到序列长度: {required_length}")
+            return {"success": False, "error": "未找到TIF文件或merged.csv无法推断序列长度"}
+        update_progress(10, f"检测到序列长度: {required_length} ← {length_source}")
+        print(
+            f"[步骤2] ★ 序列长度={required_length} ← {length_source}",
+            flush=True,
+        )
 
         # 创建临时目录
         temp_dir = create_temp_dir()

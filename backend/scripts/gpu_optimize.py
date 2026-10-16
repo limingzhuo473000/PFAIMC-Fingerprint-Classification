@@ -319,24 +319,26 @@ def batch_hamming_distance_gpu(
     batch_size=5000,  # 每批处理的像元数
     threshold=None,   # 距离阈值，超过则不匹配
     progress_callback=None,  # 进度回调 fn(current, total)
-    distance_metric='hamming'  # 距离度量: 'hamming' / 'euclidean'（消融实验2）
+    distance_metric='hamming',  # 距离度量: 'hamming' / 'euclidean'（消融实验2）
+    hamming_tolerance=0.0,   # 汉明距离容差 ε（>0 时对连续值启用容差判定，消融实验1）
 ):
     """
-    GPU批量距离计算 - 核心加速函数（支持汉明/欧氏距离）
+    GPU批量距离计算 - 核心加速函数（支持汉明/欧氏距离，汉明支持 ε 容差）
 
     算法:
         对每个像元序列，计算到所有参考序列的距离，
         找到最小距离和对应的类别。
 
     矩阵化:
-        hamming:
+        hamming (ε=0):
             diff = (n_cells, 1, seq_len) != (1, n_refs, seq_len)  →  (n_cells, n_refs, seq_len)
             dists = diff.sum(axis=2)  →  (n_cells, n_refs)
+        hamming (ε>0，消融实验1配套):
+            diff = |cells - refs| > ε  →  bool，再 sum(axis=2)
+            距离语义仍是「不一致波段数」，量纲与经典汉明一致
         euclidean:
             diff = (n_cells, 1, seq_len) - (1, n_refs, seq_len)
             dists = sqrt((diff*diff).sum(axis=2))
-        min_dists = dists.min(axis=1)  →  (n_cells,)
-        min_indices = dists.argmin(axis=1)  →  (n_cells,)
 
     参数:
         cells_matrix: 待匹配像元序列矩阵 (n_cells, seq_len)
@@ -346,6 +348,7 @@ def batch_hamming_distance_gpu(
         threshold: 距离阈值，超过则标记为不匹配（汉明:整数位差数 / 欧氏:连续距离值）
         progress_callback: 进度回调函数
         distance_metric: 'hamming'（汉明距离）或 'euclidean'（欧氏距离，消融实验2）
+        hamming_tolerance: 汉明距离容差 ε，>0 时 |ref-current| <= ε 视为该波段相等
 
     返回:
         dict with keys:
@@ -358,12 +361,13 @@ def batch_hamming_distance_gpu(
     if not USE_GPU or cp is None:
         raise RuntimeError("GPU not available")
 
+    is_euclidean = (distance_metric == 'euclidean')
+    use_tol = (not is_euclidean) and (float(hamming_tolerance) > 0)
+
     n_cells = cells_matrix.shape[0]
     n_refs = ref_matrix.shape[0]
     seq_len = ref_matrix.shape[1]
-
-    is_euclidean = (distance_metric == 'euclidean')
-
+    
     start = time.time()
 
     # 将参考矩阵放到GPU（整个计算过程中保持不变）
@@ -406,6 +410,12 @@ def batch_hamming_distance_gpu(
             # (diff*diff).sum(axis=2) → sqrt → (batch_len, n_refs)
             diff = batch[:, None, :] - ref_gpu[None, :, :]
             dists = cp.sqrt((diff * diff).sum(axis=2, dtype=cp.float32))
+        elif use_tol:
+            # ε-容差汉明（消融实验1）
+            # |diff| > ε 的波段才计 1，其余计 0
+            # (batch_len, n_refs, seq_len) → sum(axis=2) → (batch_len, n_refs)
+            diff = cp.abs(batch[:, None, :] - ref_gpu[None, :, :]) > float(hamming_tolerance)
+            dists = diff.sum(axis=2, dtype=cp.int32)
         else:
             # 汉明距离
             # (batch_len, 1, seq_len) != (1, n_refs, seq_len) → (batch_len, n_refs, seq_len)
@@ -534,36 +544,35 @@ def estimate_batch_size(n_refs, seq_len, safety_factor=0.7, distance_metric='ham
     根据可用显存估算最优批量大小。
 
     3D张量内存 = batch_size * n_refs * seq_len * diff_bytes
-                 (hamming: bool 1字节 / euclidean: float32 4字节)
+      hamming   → diff_bytes = 1（bool）
+      euclidean → diff_bytes = 4（float32）
     加上距离矩阵 = batch_size * n_refs * 4 bytes (int32/float32)
-
+    
     参数:
         n_refs: 参考序列数量
         seq_len: 序列长度
         safety_factor: 安全系数 (0-1)
-        distance_metric: 'hamming' / 'euclidean'（欧氏距离中间张量为float32，显存占用更大）
-
+    
     返回: 建议的batch_size
     """
     if not USE_GPU or cp is None:
         return 5000  # CPU默认
-
-    # 汉明: bool 1字节；欧氏: float32 4字节
-    diff_bytes = 4 if distance_metric == 'euclidean' else 1
-
+    
     try:
         free, _ = cp.cuda.runtime.memGetInfo()
         free_bytes = free * safety_factor
-
+        
         # 每个像元需要的显存:
-        # 1. 3D diff张量: n_refs * seq_len * diff_bytes
+        # 1. 3D 差值张量: n_refs * seq_len * diff_bytes（bool=1 / float32=4）
         # 2. 距离矩阵: n_refs * 4 bytes
-        # 3. 输入数据: seq_len * 4 bytes (float32/int32)
-        per_cell_bytes = n_refs * seq_len * diff_bytes + n_refs * 4 + seq_len * 4
-
+        # 3. 输入数据: seq_len * 2 bytes (int16) 或 seq_len * 4 bytes (float32)
+        diff_bytes = 4 if distance_metric == 'euclidean' else 1
+        input_bytes = 4 if distance_metric == 'euclidean' else 2
+        per_cell_bytes = n_refs * seq_len * diff_bytes + n_refs * 4 + seq_len * input_bytes
+        
         batch_size = int(free_bytes / per_cell_bytes)
         batch_size = max(100, min(batch_size, 50000))  # 限制在100-50000
-
+        
         return batch_size
     except Exception:
         return 5000

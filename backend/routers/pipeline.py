@@ -17,11 +17,12 @@
     2. Kappa未达标 但 未分类像素比例 < 阈值（默认10%）→ 终止
     3. 两者均不满足 → 继续迭代
     4. 达到最大轮次 → 强制终止
-    5. 所有类别均已冻结 → 提前终止（仅当启用冻结策略 enable_freeze=True 时）
+    5. 所有类别均已冻结 → 提前终止
 """
 
 import os
 import sys
+import math
 import time
 import asyncio
 import threading
@@ -34,10 +35,11 @@ from typing import Optional
 import numpy as np
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from backend.core.task_manager import task_manager, TaskStatus
+from backend.core.path_utils import normalize_request_paths
 from scripts.process01 import run_step1
 from scripts.process02 import run_step2
 from scripts.process03 import run_step3
@@ -199,13 +201,22 @@ class LandCoverClass(BaseModel):
 class PipelineRequest(BaseModel):
     """全流程请求参数（所有步骤所需的初始输入）"""
 
+    # ★ 路径规范化：把 "E://x//y"、"E:\\x\\y" 等写法统一收敛，
+    #   防止 pandas 把 "E://" 误判为 fsspec 协议 URL（桌面版打包环境实测踩坑）。
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_path_slashes(cls, data):
+        return normalize_request_paths(data)
+
     # ── 步骤1 参数 ────────────────────────────────────────────
     input_img_dir: str = Field(description="影像文件夹路径（.tif/.tiff/.img）")
     output_dir: str = Field(description="所有步骤的公共输出根目录")
     existing_step1_csv: Optional[str] = Field(default=None, description="已有的步骤1输出CSV文件绝对路径，填写后跳过步骤1直接使用该文件")
     filename: str = Field(default="merged", description="步骤1输出文件名（不含扩展名）")
-    num_classes: int = Field(default=5, ge=2, le=20, description="分位数分类数量")
+    num_classes: int = Field(default=5, ge=1, le=100, description="分位数分类数量（1-N可调）")
     skip_discretization: bool = Field(default=False, description="消融实验1：跳过五级分位数离散化，直接合并零值处理后的数值文件（后续步骤以连续数值进行距离计算）")
+    normalize_continuous: bool = Field(default=False, description="消融实验1配套：跳过离散化时对连续数值做逐波段 z-score 标准化（消除反射率与指数波段的量级差），欧氏距离才有统一量纲")
+    zero_policy: str = Field(default='include', description="分位数统计中 0 值（NoData/背景）的处理策略：'include'=0 参与统计（默认，等级严格等分，与 92.66% 历史实验口径一致）/ 'exclude'=排除（只取 >0 的值参与分位数统计，有效地物独占完整等级分辨率）/ 'auto'=按 0 值占比自动择优")
     delete_ranges: Optional[list[BandRange]] = Field(default=None, description="要删除的波段范围")
     adjust_sizes: bool = Field(default=True, description="是否自动调整不同尺寸的CSV")
 
@@ -216,11 +227,12 @@ class PipelineRequest(BaseModel):
 
     # ── 步骤3 参数 ────────────────────────────────────────────
     target_file: Optional[str] = Field(default=None, description="待匹配的目标CSV文件路径（步骤1输出，可选，默认自动推导为 output_dir/step1/filename.csv）")
-    threshold_mode: str = Field(default='manual', description="阈值模式：'manual'=手动设置初始阈值，'auto'=系统自动根据数据特征计算最优初始阈值")
-    initial_threshold: float = Field(default=15, ge=0, description="初始距离阈值（手动模式下生效；汉明距离为整数位差数，欧氏距离为连续距离值）")
-    threshold_step: float = Field(default=5, ge=0.01, le=200, description="每轮阈值递增步长（手动/自动模式下均生效；欧氏距离模式可设小数）")
+    threshold_mode: str = Field(default='manual', description="阈值模式：'manual'=初始阈值自动按影像文件数5%计算，'auto'=系统采样分析计算最优初始阈值（步长两种模式均按影像文件数2.5%自动计算）")
+    initial_threshold: float = Field(default=15, ge=0, description="汉明距离初始阈值。【已废弃】2026-09-09 起改为自动计算：初始阈值=影像文件数(时相文件数)×5% 并向上取整为整数（例：50个文件→2.5→3）。此字段值不再生效，仅保留兼容旧前端。")
+    threshold_step: float = Field(default=5, ge=0, le=100, description="每轮阈值递增步长。【已废弃】2026-09-09 起改为自动计算：步长=影像文件数(时相文件数)×2.5% 并向上取整为整数（例：50个文件→1.25→步长2）。此字段值不再生效，仅保留兼容旧前端。")
     auto_threshold_samples: int = Field(default=2000, ge=100, le=10000, description="自动阈值模式下，用于分析的像素采样数量")
     distance_metric: str = Field(default='hamming', description="消融实验2：距离度量，'hamming'=汉明距离（默认，位级匹配），'euclidean'=欧氏距离匹配")
+    hamming_tolerance: float = Field(default=0.0, ge=0.0, le=1000.0, description="消融实验1配套：汉明距离容差 ε。0=严格逐位相等判定（经典汉明）；>0 时 |ref-current|<=ε 视为该波段相等。跳过离散化后序列为连续浮点值，必须设 ε>0 否则距离恒=序列长度、必然零匹配。输入做了逐波段标准化时，ε 的单位为标准差")
     execution_mode: str = Field(default='multiprocess', description="匹配执行模式：'gpu'=GPU加速, 'multiprocess'=多进程并行（默认），'serial'=主循环串行")
     num_processes: int = Field(default=0, ge=0, le=64, description="多进程模式的进程数，0=自动（max(8,CPU核心数)），建议范围4-32")
     # 兼容旧字段（已废弃，保留防止旧前端报错）
@@ -239,9 +251,9 @@ class PipelineRequest(BaseModel):
     # ── 迭代控制参数 ──────────────────────────────────────────
     kappa_threshold: float = Field(default=0.8, ge=0.0, le=1.0, description="Kappa系数终止阈值（≥此值终止）")
     unclassified_threshold: float = Field(default=10.0, ge=0.0, le=100.0, description="未分类像素比例终止阈值（<此值时达标），单位%")
-    max_iterations: int = Field(default=10, ge=1, le=50, description="最大迭代轮次")
+    max_iterations: int = Field(default=25, ge=1, le=50, description="最大迭代轮次")
+    fixed_rounds: bool = Field(default=True, description="固定轮次模式：忽略Kappa/未分类/类别冻结等提前终止条件，始终跑满max_iterations轮")
     consecutive_rounds: int = Field(default=3, ge=1, le=10, description="类别冻结连续轮次：连续N轮PA增幅<0.5%则冻结该类别")
-    enable_freeze: bool = Field(default=True, description="是否启用类别冻结策略：勾选后按冻结策略自动冻结收敛类别；不勾选则整个运行期间不进行冻结，所有类别始终保持活跃")
 
 
 # ============================================================
@@ -313,13 +325,12 @@ def _format_time(seconds: float) -> str:
 # 自动阈值计算（基于数据特征分析）
 # ============================================================
 
-def _parse_cell_sequence(cell: str, target_length: int, keep_float: bool = False):
-    """解析单元格中的序列值。
+def _parse_cell_sequence(cell: str, target_length: int, as_float: bool = False):
+    """解析单元格中的序列值，返回数值列表或 None
 
     参数:
-        keep_float: True 时保持连续浮点数值（欧氏距离/跳过离散化模式），
-                    False 时转为整数（汉明距离离散编码模式，兼容旧行为）
-    返回: 数值列表或 None
+        as_float: True 时保留原始浮点值（跳过离散化后的连续数值指纹必须如此，
+            否则 int() 截断会破坏数值、容差汉明/欧氏距离失真）
     """
     if not cell or not cell.strip():
         return None
@@ -327,7 +338,7 @@ def _parse_cell_sequence(cell: str, target_length: int, keep_float: bool = False
         vals = cell.strip().split()
         if len(vals) != target_length:
             return None
-        if keep_float:
+        if as_float:
             return [float(v) for v in vals]
         return [int(float(v)) for v in vals]
     except (ValueError, AttributeError):
@@ -341,50 +352,72 @@ def _calculate_optimal_threshold(
     target_sequence_length: int,
     sample_count: int = 2000,
     distance_metric: str = 'hamming',
-):
+    hamming_tolerance: float = 0.0,
+) -> int:
     """
-    自动计算最优初始距离阈值（支持汉明/欧氏距离）。
+    自动计算最优初始距离阈值（支持经典汉明、ε-容差汉明与欧氏距离）。
 
-    策略：
-    1. 从目标CSV中随机抽取像素序列
-    2. 计算每个采样像素到所有参考序列的距离（按 distance_metric 计算）
-    3. 分析距离分布，选择能平衡"分类覆盖率"和"匹配精度"的阈值
+    策略（2026-09-19 修订）：
+    1. 从目标CSV中水库采样像素序列（只解析采中的格子，秒级完成）
+    2. 计算每个采样像素到所有参考序列的「最近」距离与并列数
+       距离度量：
+         - euclidean  → sqrt(Σ(ref-current)^2)（连续值）
+         - ε=0 汉明   → 严格逐位不等计数
+         - ε>0 汉明   → |ref-current|>ε 的波段计数
+    3. 在最近距离分布的分位数候选中，选择能平衡"分类覆盖率"和"匹配歧义率"的阈值
 
-    返回推荐的初始阈值（汉明: 整数，范围 [2, min(30, seq_len*2)]；
-                          欧氏: 连续值，基于分布分位数）
+    返回推荐的初始阈值（汉明: 整数，范围 [2, max(30, seq_len*0.6)]）
     """
     import random
     import csv
 
-    is_euclidean = (distance_metric == 'euclidean')
+    _is_euclid = (distance_metric == 'euclidean')
+    _tol = float(hamming_tolerance) if hamming_tolerance else 0.0
+    # 欧氏 / ε-容差模式下必须保留原始浮点值用 float32 参与减法比较
+    _need_float = _is_euclid or _tol > 0
 
-    # ── 1. 读取目标CSV并采样 ──
-    target_rows = None
+    # ── 1. 读取目标CSV并水库采样 ──
+    # ★ 2026-09-19 性能修复：旧版把全部格子（可达42万个）解析成整数列表，
+    #   约需2亿次 int 转换、耗时数分钟，前端看起来像卡死。
+    #   改为水库采样：流式扫描原始字符串，仅对最终采中的 sample_count 个做解析。
+    sampled_cells = []   # 水库：保存原始字符串
+    seen = 0             # 已扫到的有效格子数
     for encoding in ['utf-8-sig', 'utf-8', 'gbk', 'gb2312', 'latin1']:
         try:
             with open(target_file, 'r', newline='', encoding=encoding) as f:
-                target_rows = list(csv.reader(f))
+                for row in csv.reader(f):
+                    for cell in row:
+                        if not cell or not cell.strip():
+                            continue
+                        # 廉价长度预检：token 数不符的直接跳过（与 _parse_cell_sequence 语义一致）
+                        if len(cell.split()) != target_sequence_length:
+                            continue
+                        seen += 1
+                        if len(sampled_cells) < sample_count:
+                            sampled_cells.append(cell)
+                        else:
+                            j = random.randint(0, seen - 1)
+                            if j < sample_count:
+                                sampled_cells[j] = cell
             break
         except Exception:
             continue
 
-    if not target_rows:
+    if not sampled_cells:
         return 10  # 默认回退
 
-    # 收集所有有效单元格（统一按浮点解析：离散编码与连续数值均兼容）
-    all_cells = []
-    for row in target_rows:
-        for cell in row:
-            seq = _parse_cell_sequence(cell, target_sequence_length, keep_float=True)
-            if seq is not None:
-                all_cells.append(seq)
+    sampled_sequences = []
+    for cell in sampled_cells:
+        try:
+            if _need_float:
+                sampled_sequences.append([float(v) for v in cell.split()])
+            else:
+                sampled_sequences.append([int(float(v)) for v in cell.split()])
+        except (ValueError, AttributeError):
+            continue
 
-    if not all_cells:
+    if not sampled_sequences:
         return 10
-
-    # 随机采样（不重复，但允许数量不足）
-    sample_count = min(sample_count, len(all_cells))
-    sampled_sequences = random.sample(all_cells, sample_count)
 
     # ── 2. 读取参考序列 ──
     ref_sequences = []
@@ -414,73 +447,34 @@ def _calculate_optimal_threshold(
             continue
 
         for i in range(1, len(sample_rows)):
-            seq = _parse_cell_sequence(sample_rows[i][seq_col] if seq_col < len(sample_rows[i]) else '',
-                                       target_sequence_length, keep_float=True)
+            seq = _parse_cell_sequence(sample_rows[i][seq_col] if seq_col < len(sample_rows[i]) else '', target_sequence_length, as_float=_need_float)
             if seq is not None:
                 ref_sequences.append(seq)
 
     if not ref_sequences:
         return 10
 
-    # ── 3. 计算距离分布（GPU加速） ──
-    if is_euclidean:
-        # 欧氏距离：连续数值，float32
-        ref_matrix = np.array(ref_sequences, dtype=np.float32)
-        seq_dtype = np.float32
-    else:
-        # 汉明距离：离散整数编码用 int16；
-        # 含非整数值（跳过离散化的连续数值）时改用 float32，避免 int() 截断破坏数值
-        all_integral = all(float(v).is_integer() for seq in ref_sequences for v in seq)
-        if all_integral:
-            ref_matrix = np.array(ref_sequences, dtype=np.int16)
-            seq_dtype = np.int16
-        else:
-            ref_matrix = np.array(ref_sequences, dtype=np.float32)
-            seq_dtype = np.float32
+    # ── 3. 计算每个采样像素的最近参考距离与并列数 ──
+    # ★ 2026-09-19 修复：旧版统计的是「采样像素×全部参考」的 pairwise 距离分布，
+    #   中位数/分位数被大量无关参考拉得极高，推荐阈值动辄数百，第1轮就把几乎
+    #   全部像素匹配上、精度崩坏。匹配时真正决定成败的是每个像素的「最近距离」。
+    _ref_dtype = np.float32 if _need_float else np.int16
+    ref_matrix = np.array(ref_sequences, dtype=_ref_dtype)
 
-    def _compute_dists(matrix, arr):
-        """按距离度量计算 matrix 每行到 arr 的距离"""
-        if is_euclidean:
-            diff = matrix - arr
-            return np.sqrt((diff * diff).sum(axis=1, dtype=np.float32))
-        return np.not_equal(matrix, arr).sum(axis=1)
-
-    # 尝试GPU加速
+    min_dists = []    # 每个采样像素到最近参考序列的距离（不一致波段数）
+    tie_counts = []   # 最近距离并列的参考序列数（>1 即存在歧义）
     gpu_used = False
     try:
-        from scripts.gpu_optimize import init_gpu, USE_GPU, batch_hamming_distance_gpu
-        init_gpu()
-        if USE_GPU:
-            import time as _time
-            print(f"[自动阈值] 使用GPU加速计算 ({len(sampled_sequences)}像素 x {len(ref_sequences)}参考, {distance_metric})", flush=True)
-
-            # 构建采样矩阵
-            sampled_matrix = np.array(sampled_sequences, dtype=seq_dtype)
-
-            # GPU批量计算距离
-            gpu_result = batch_hamming_distance_gpu(
-                sampled_matrix, ref_matrix,
-                repl_ids=None,  # 阈值计算不需要类别ID
-                batch_size=2000,
-                threshold=None,
-                distance_metric=distance_metric,
-            )
-
-            # 从GPU结果重建距离分布
-            min_dists = gpu_result['min_distances']
-            min_indices = gpu_result['min_indices']
-
-            # 需要完整的距离分布，不只是最小值
-            # 重新用GPU计算完整距离矩阵（分批）
+        import scripts.gpu_optimize as _gpu_mod
+        _gpu_mod.init_gpu()
+        if _gpu_mod.USE_GPU:
             import cupy as cp
+            print(f"[自动阈值] 使用GPU加速计算 ({len(sampled_sequences)}像素 x {len(ref_sequences)}参考)", flush=True)
             ref_gpu = cp.asarray(ref_matrix)
-            all_distances_list = []
-            matched_counts_list = []
-
             batch_size = 2000
             for i in range(0, len(sampled_sequences), batch_size):
-                batch = cp.asarray(sampled_matrix[i:i+batch_size])
-                if is_euclidean:
+                batch = cp.asarray(np.array(sampled_sequences[i:i + batch_size], dtype=_ref_dtype))
+                if _is_euclid:
                     diff = batch[:, None, :] - ref_gpu[None, :, :]
                     dists = cp.sqrt((diff * diff).sum(axis=2, dtype=cp.float32))
                     del diff
@@ -488,108 +482,106 @@ def _calculate_optimal_threshold(
                     diff = cp.not_equal(batch[:, None, :], ref_gpu[None, :, :])
                     dists = diff.sum(axis=2, dtype=cp.int32)
                 min_d = cp.min(dists, axis=1)
-                match_counts = (dists == min_d[:, None]).sum(axis=1)
-
-                all_distances_list.append(cp.asnumpy(dists).flatten())
-                matched_counts_list.append(cp.asnumpy(match_counts))
-
-                del batch, dists, min_d, match_counts
-
+                tie = (dists == min_d[:, None]).sum(axis=1)
+                min_dists.extend(cp.asnumpy(min_d).tolist())
+                tie_counts.extend(cp.asnumpy(tie).tolist())
+                del batch, diff, dists, min_d, tie
             cp.cuda.Stream.null.synchronize()
             del ref_gpu
-
-            all_distances = np.concatenate(all_distances_list)
-            matched_counts = np.concatenate(matched_counts_list)
             gpu_used = True
-
-            elapsed = gpu_result.get('gpu_time', 0)
-            print(f"[自动阈值] GPU计算完成 ({elapsed:.2f}s)", flush=True)
     except Exception as e:
         print(f"[自动阈值] GPU不可用，使用CPU: {e}", flush=True)
         gpu_used = False
 
     if not gpu_used:
-        # CPU计算
-        all_distances = []
-        matched_counts = []
+        # CPU计算（严格逐位不等计数）
         for seq in sampled_sequences:
-            current_arr = np.array(seq, dtype=seq_dtype)
-            dists = _compute_dists(ref_matrix, current_arr)
-            all_distances.extend(dists.tolist())
-            matched_counts.append(int((dists == dists.min()).sum()))
+            current_arr = np.array(seq, dtype=_ref_dtype)
+            if _is_euclid:
+                diff = ref_matrix - current_arr
+                dists = np.sqrt((diff * diff).sum(axis=1, dtype=np.float32))
+            else:
+                dists = np.not_equal(ref_matrix, current_arr).sum(axis=1)
+            if _is_euclid:
+                _d = float(dists.min())
+                min_dists.append(_d)
+                tie_counts.append(int((dists <= _d + 1e-6).sum()))
+            else:
+                d_min_i = int(dists.min())
+                min_dists.append(d_min_i)
+                tie_counts.append(int((dists == d_min_i).sum()))
 
-    all_distances = np.array(all_distances)
-    matched_counts = np.array(matched_counts)
+    _dist_dtype = np.float64 if _is_euclid else np.int64
+    min_dists = np.array(min_dists, dtype=_dist_dtype)
+    tie_counts = np.array(tie_counts, dtype=np.int64)
 
-    # ── 4. 基于分布选择最优阈值 ──
-    # 计算关键统计量
-    d_min = all_distances.min()
-    d_max = all_distances.max()
-    d_median = np.median(all_distances)
-    d_mean = float(all_distances.mean())
-    d_std = float(all_distances.std())
-    d_q25 = np.percentile(all_distances, 25)
-    d_q75 = np.percentile(all_distances, 75)
-    d_q90 = np.percentile(all_distances, 90)
-
-    if is_euclidean:
-        # 欧氏距离：连续值阈值候选（按分位数），不做整数截断
-        candidates = sorted(set([
-            max(0.0, float(d_q25)),
-            float(d_median),
-            float(d_q75),
-            max(0.0, d_mean - d_std),
-            float(d_mean),
-            float(d_mean + d_std * 0.5),
-            float(d_q90),
-        ]))
+    # ── 4. 基于最近距离分布选择最优阈值 ──
+    # 欧氏距离为连续值，保留小数（阈值语义=连续距离）；汉明为整数（不一致波段数）
+    if _is_euclid:
+        _r = lambda v: round(float(v), 3)
+        d_min, d_max, d_median = _r(min_dists.min()), _r(min_dists.max()), _r(np.median(min_dists))
+        d_q25, d_q75, d_q90 = _r(np.percentile(min_dists, 25)), _r(np.percentile(min_dists, 75)), _r(np.percentile(min_dists, 90))
     else:
-        # 汉明距离：整数阈值候选
-        candidates = sorted(set([
-            max(0, int(d_median) - 1),
-            int(d_median),
-            int(d_q75),
-            max(0, int(d_mean - d_std)),
-            int(d_mean),
-            int(d_mean + d_std * 0.5),
-            int(d_q90),
-            max(2, target_sequence_length // 3),
-        ]))
+        d_min = int(min_dists.min())
+        d_max = int(min_dists.max())
+        d_median = int(np.median(min_dists))
+        d_q25 = int(np.percentile(min_dists, 25))
+        d_q75 = int(np.percentile(min_dists, 75))
+        d_q90 = int(np.percentile(min_dists, 90))
+    d_mean = float(min_dists.mean())
 
-    best_threshold = candidates[0]
+    # 候选阈值取最近距离分布的分位数（覆盖保守到激进的策略）
+    candidates = sorted(set([
+        d_min,
+        d_q25,
+        d_median,
+        d_q75,
+        d_q90,
+        max(2, target_sequence_length // 3),
+    ]))
+
+    best_threshold = d_median
     best_score = -1.0
 
     for t in candidates:
-        # 在该阈值下，有多少像素能找到至少一个匹配
-        coverage = (all_distances <= t).mean()
-        # 在该阈值下，有多少像素存在歧义（多个最小距离）
-        # 简化：当阈值>=最小距离时，如果匹配数>1则歧义
-        ambiguous = (matched_counts > 1).mean() if t >= d_min else 0.0
-        # 分数 = 覆盖率 - 歧义率惩罚（权重2倍）
-        score = coverage - ambiguous * 2.0
+        # 覆盖率：多少采样像素的最近距离 ≤ t（第1轮即可被匹配分类）
+        covered = min_dists <= t
+        coverage = covered.mean()
+        if coverage <= 0:
+            score = 0.0
+        else:
+            # 歧义率：被覆盖像素中最近距离存在并列（无法唯一确定类别）的比例。
+            # ★ 旧版 bug：ambiguous 不随 t 变化（常数惩罚），等价于直接选覆盖率
+            #   最大的候选 → 总是推荐最大阈值。现在歧义率随 t 增大而上升，
+            #   才能真正平衡「覆盖率」与「匹配精度」。
+            ambiguous = (tie_counts[covered] > 1).mean()
+            score = coverage - ambiguous * 2.0
         if score > best_score:
             best_score = score
             best_threshold = t
 
-    # 限制在合理范围
-    if is_euclidean:
-        # 欧氏距离：下限为一个小正数，上限为90%分位与最大值之间的合理范围
-        best_threshold = max(1e-6, min(float(best_threshold), float(d_max)))
+    # 限制在合理范围 — 上限随序列长度自适应
+    # 旧代码硬编码 min(30, ...) 导致111波段的哨兵数据阈值被压到30，
+    # 远小于实际需要的值（111波段需要阈值40~60才能有效匹配）
+    # 欧氏距离为连续值：不做整数截断，只保证正值（量纲与汉明不同，不能套用同一上限）
+    if _is_euclid:
+        best_threshold = max(float(best_threshold), 1e-6)
     else:
-        best_threshold = max(2, min(int(best_threshold), min(30, target_sequence_length * 2)))
+        max_cap = max(30, int(target_sequence_length * 0.6))
+        best_threshold = max(2, min(int(best_threshold), max_cap))
 
     print(
         f"[自动阈值] 分析完成: 采样{len(sampled_sequences)}个像素, {len(ref_sequences)}条参考序列, "
-        f"距离度量={distance_metric}, 距离范围[{d_min:.4g}-{d_max:.4g}], 中位数={d_median:.4g}, "
-        f"均值={d_mean:.4g}, std={d_std:.4g}. "
-        f"推荐初始阈值={best_threshold}",
+        f"最近距离范围[{d_min}-{d_max}], P25={d_q25}, 中位数={d_median}, 均值={d_mean:.1f}, "
+        f"P75={d_q75}, P90={d_q90}. 推荐初始阈值={best_threshold} (得分={best_score:.3f})",
         flush=True,
     )
 
     return best_threshold
 
 
-def _save_timing_report(output_dir: str, timing: dict, stop_reason: str, final_round: int) -> str:
+def _save_timing_report(output_dir: str, timing: dict, stop_reason: str, final_round: int,
+                        distance_metric: str = 'hamming', hamming_tolerance: float = 0.0) -> str:
     """生成并保存计时报告TXT文件，返回文件路径"""
     report_path = os.path.join(output_dir, "timing_report.txt")
     lines = []
@@ -599,6 +591,14 @@ def _save_timing_report(output_dir: str, timing: dict, stop_reason: str, final_r
     lines.append(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     lines.append(f"终止原因: {stop_reason}")
     lines.append(f"总迭代轮次: {final_round}")
+    # 记录本轮实际使用的匹配配置，避免报告口径与实验设置不符（消融实验留证）
+    if distance_metric == 'euclidean':
+        _metric_label = "欧氏距离"
+    elif hamming_tolerance and hamming_tolerance > 0:
+        _metric_label = f"ε-容差汉明 (ε={hamming_tolerance})"
+    else:
+        _metric_label = "汉明距离（严格逐位相等）"
+    lines.append(f"距离度量: {_metric_label}")
     lines.append("")
 
     # 整体时间
@@ -613,7 +613,7 @@ def _save_timing_report(output_dir: str, timing: dict, stop_reason: str, final_r
     if st:
         lines.append(f"【各阶段运行时间】")
         step_names = {"step1": "步骤1 影像填充合并", "step2": "步骤2 样本进阶分析",
-                      "step3": "步骤3 汉明距离匹配", "step4": "步骤4 CSV→ENVI转换",
+                      "step3": f"步骤3 {_metric_label}匹配", "step4": "步骤4 CSV→ENVI转换",
                       "step5": "步骤5 ENVI重分类", "step6": "步骤6 精度评价"}
         for key in ["step1", "step2", "step3", "step4", "step5", "step6"]:
             if key in st:
@@ -656,7 +656,7 @@ class PreviewReplacementsRequest(BaseModel):
     """预览替换值请求"""
     input_img_dir: str = Field(description="影像文件夹路径（复用基础路径配置）")
     shp_input: str = Field(description="SHP文件或文件夹路径")
-    num_rounds: int = Field(default=5, ge=1, le=20, description="预览轮次数")
+    num_rounds: int = Field(default=25, ge=1, le=50, description="预览轮次数")
     experiment_data_path: Optional[str] = Field(default=None, description="步骤1输出的实验数据CSV路径（若提供则按实际匹配顺序生成预览）")
 
 
@@ -761,6 +761,32 @@ async def _run_pipeline_impl(request: PipelineRequest, background_tasks: Backgro
             status_code=400,
             detail=f"不支持的距离度量: {request.distance_metric}（可选 'hamming' 或 'euclidean'）",
         )
+    if request.skip_discretization and request.distance_metric == 'hamming':
+        if request.hamming_tolerance > 0:
+            # 消融实验1 的正确实现：去掉离散化编码，汉明判定放宽为 ε-容差，
+            # 距离仍是「不一致波段数」，与基线（离散化+汉明）同量纲、可比。
+            print(
+                f"[消融实验1] 跳过离散化 + ε-容差汉明：ε={request.hamming_tolerance}，"
+                f"|ref-current|<=ε 视为该波段相等；距离语义与基线一致（不一致波段数）。",
+                flush=True,
+            )
+        else:
+            # 消融实验1（跳过离散化）与严格汉明距离搭配时，序列为连续浮点值，
+            # 汉明距离按位判断"不相等"，任意两序列距离恒≈序列长度，任何阈值下都不会命中。
+            # 该组合用于消融留证（实测 124036：13 轮 OA 全 0.00%、109/109 未分类），
+            # 此处只告警、不强制改写，尊重用户的度量选择。
+            print(
+                "[消融警告] 当前组合 = 跳过离散化 + 严格汉明距离（ε=0）：指纹为连续浮点序列，"
+                "按位比较几乎处处不相等，距离恒≈序列长度，任何阈值下都不会命中，"
+                "结果必然全部未分类（OA/Kappa=0）。若非刻意留证该组合失效，"
+                "请设置 hamming_tolerance>0 或改用 distance_metric='euclidean'。",
+                flush=True,
+            )
+    elif request.hamming_tolerance > 0 and request.distance_metric == 'euclidean':
+        print(
+            f"[提示] distance_metric='euclidean' 时 hamming_tolerance={request.hamming_tolerance} 不生效。",
+            flush=True,
+        )
 
     # 目标CSV文件自动推导（若前端未传则自动构造）
     target_file = request.target_file
@@ -849,9 +875,12 @@ async def _run_pipeline_impl(request: PipelineRequest, background_tasks: Backgro
         request.existing_step1_csv or None,  # 已有步骤1结果，有值则跳过步骤1
         request.execution_mode,               # 匹配执行模式：multiprocess/serial
         request.num_processes,                # 多进程模式进程数，0=自动
+        request.fixed_rounds,                 # 固定轮次模式：True=跑满max_iterations轮，不提前终止
         request.skip_discretization,          # 消融实验1：跳过离散化，直接合并数值文件
+        request.normalize_continuous,         # 消融实验1配套：连续数值逐波段标准化
         request.distance_metric,              # 消融实验2：距离度量 hamming/euclidean
-        request.enable_freeze,                # 类别冻结策略开关（默认开启，取消勾选则全程不冻结）
+        request.zero_policy,                  # 分位数统计 0 值处理策略 auto/include/exclude
+        request.hamming_tolerance,            # 消融实验1配套：汉明距离容差 ε
     )
 
     return {"task_id": task_id, "message": "全流程任务已创建，正在后台执行"}
@@ -861,13 +890,14 @@ async def _run_pipeline_impl(request: PipelineRequest, background_tasks: Backgro
 async def get_pipeline_info():
     return {
         "name": "全流程处理（多轮迭代）",
-        "description": "步骤1-2准备数据，步骤3-6多轮迭代直到Kappa≥阈值且未分类像素比例<阈值",
+        "description": "步骤1-2准备数据，步骤3-6多轮迭代；固定轮次模式（默认开启）下始终跑满最大轮次（默认25轮）",
         "steps": PIPELINE_STEPS,
         "termination": {
-            "kappa_threshold": "Kappa系数 ≥ 阈值（默认0.8）",
-            "unclassified_threshold": "未分类像素比例 < 阈值（默认10%）",
-            "combined": "级联判断：先检查Kappa，Kappa达标即终止；Kappa未达标再检查未分类比例，达标也终止",
-            "max_iterations": "达到最大轮次时强制停止",
+            "fixed_rounds": "固定轮次模式（默认开启）：忽略提前终止条件，始终跑满最大迭代轮次（默认25轮）",
+            "kappa_threshold": "Kappa系数 ≥ 阈值（默认0.8）【仅非固定轮次模式生效】",
+            "unclassified_threshold": "未分类像素比例 < 阈值（默认10%）【仅非固定轮次模式生效】",
+            "class_freeze": "类别连续N轮PA增幅<0.5%冻结【仅非固定轮次模式生效】",
+            "max_iterations": "达到最大轮次（默认25）时停止",
         },
     }
 
@@ -934,16 +964,23 @@ async def _run_pipeline_background(
     existing_step1_csv: Optional[str] = None,
     execution_mode: str = 'multiprocess',
     num_processes: int = 0,
+    fixed_rounds: bool = True,
     skip_discretization: bool = False,
+    normalize_continuous: bool = False,
     distance_metric: str = 'hamming',
-    enable_freeze: bool = True,
+    zero_policy: str = 'include',
+    hamming_tolerance: float = 0.0,
 ):
     """全流程后台执行逻辑（多轮迭代版）
 
-    skip_discretization: 消融实验1 — 跳过五级分位数离散化，直接合并数值文件
-    distance_metric:     消融实验2 — 匹配距离度量，'hamming'（默认）或 'euclidean'
-    enable_freeze:       类别冻结策略开关 — True（默认）按冻结策略自动冻结收敛类别；
-                         False 时整个运行期间不进行冻结，所有类别始终保持活跃
+    消融实验参数：
+        skip_discretization: 消融实验1 — 跳过五级分位数离散化，直接合并数值文件
+        normalize_continuous: 消融实验1配套 — 连续数值逐波段 z-score 标准化
+        distance_metric:     消融实验2 — 匹配距离度量，'hamming'（默认）或 'euclidean'
+        zero_policy:         分位数统计中 0 值处理策略，'include' 为默认（0 参与统计）
+        hamming_tolerance:   消融实验1配套 — 汉明距离容差 ε。0=严格逐位相等（经典汉明）；
+                             >0 时 |ref-current|<=ε 视为该波段相等，不计入距离。
+                             跳过离散化后序列为连续浮点值，必须设 ε>0。
     """
 
     try:
@@ -1047,6 +1084,8 @@ async def _run_pipeline_background(
                     delete_ranges=delete_ranges,
                     adjust_sizes=adjust_sizes,
                     skip_discretization=skip_discretization,
+                    normalize_continuous=normalize_continuous,
+                    zero_policy=zero_policy,
                 )
             except Exception as e:
                 # 写入日志文件以便诊断
@@ -1139,6 +1178,8 @@ async def _run_pipeline_background(
                     delete_ranges=delete_ranges,
                     adjust_sizes=adjust_sizes,
                     skip_discretization=skip_discretization,
+                    normalize_continuous=normalize_continuous,
+                    zero_policy=zero_policy,
                 )
             except Exception as e:
                 err_log = os.path.join(output_dir, "pipeline_error.log")
@@ -1324,8 +1365,36 @@ async def _run_pipeline_background(
         # ════════════════════════════════════════════════════
 
         # ── 自动阈值计算（如启用）────────────────────────────
+        # 先检测波段数（后续多处使用）
+        # ★ 关键修复：必须统计「子波段总数」而非影像文件数——多波段文件（如哨兵
+        #   TCI 真彩色，3波段）在步骤1中会被拆成多个CSV（_B1/_B2/_B3），merged.csv
+        #   的实际序列长度 = 子波段总数。此前按文件数统计（111 vs 实际127），步骤3的
+        #   严格长度校验 len(vals) != target_sequence_length 会跳过所有单元格，
+        #   导致任何阈值下匹配数为0、精度永远为0%。
+        from scripts.process01 import count_total_bands
+        detected_bands = count_total_bands(input_img_dir)
+        _file_count = len([f for f in os.listdir(input_img_dir)
+                           if f.lower().endswith(('.tif', '.tiff', '.img'))])
+        if detected_bands and detected_bands != _file_count:
+            print(
+                f"[Pipeline] ★ 检测到多波段文件: 影像文件数={_file_count}, "
+                f"子波段总数={detected_bands}（多波段文件已按实际波段数计入序列长度）",
+                flush=True,
+            )
+        seq_len = detected_bands if detected_bands > 0 else 7
+
         if threshold_mode == 'auto':
             try:
+                # ★ 2026-09-19 修复：自动阈值分析必须用 merged.csv 的权威序列长度，
+                #   不能直接用 count_total_bands——多波段/失败TIF场景下两者可能差几个
+                #   token（如 460 vs 457），长度校验 len(vals)!=target_length 会把全部
+                #   格子和样本序列拒之门外，分析退化为默认值 10。
+                from scripts.process01 import resolve_required_sequence_length
+                _auth_len, _auth_src = resolve_required_sequence_length(
+                    target_file, tif_folder=input_img_dir)
+                if _auth_len and _auth_len > 0:
+                    seq_len = _auth_len
+                    print(f"[Pipeline] 自动阈值分析使用权威序列长度: {_auth_len} (来源: {_auth_src})", flush=True)
                 task_manager.update_task(
                     task_id,
                     status=TaskStatus.RUNNING,
@@ -1333,9 +1402,6 @@ async def _run_pipeline_background(
                     progress=10.0,
                     result={"current_step": 3, "step_message": "自动阈值分析中...", "step_progress": 0, "current_round": 0},
                 )
-                detected_bands = len([f for f in os.listdir(input_img_dir)
-                                      if f.lower().endswith(('.tif', '.tiff', '.img'))])
-                seq_len = detected_bands if detected_bands > 0 else 7
                 auto_threshold = _calculate_optimal_threshold(
                     target_file=target_file,
                     samples_folder=step2_out,
@@ -1343,12 +1409,40 @@ async def _run_pipeline_background(
                     target_sequence_length=seq_len,
                     sample_count=auto_threshold_samples,
                     distance_metric=distance_metric,
+                    hamming_tolerance=hamming_tolerance,
                 )
                 initial_threshold = auto_threshold
                 print(f"[Pipeline] 自动阈值模式: 初始阈值设置为 {initial_threshold}", flush=True)
             except Exception as e:
                 print(f"[Pipeline] 自动阈值计算失败，回退到手动默认值15: {e}", flush=True)
                 initial_threshold = 15
+
+        # ── ★ 2026-09-09 变更：初始阈值/步长按影像文件数（时相文件数）百分比自动计算 ──
+        #   初始阈值 = 影像文件数 × 5%，【2026-09-19 变更】向上取整为整数
+        #              例：50个时相文件 → 2.5 → 初始阈值 3
+        #   递增步长 = 影像文件数 × 2.5%，【2026-09-19 变更】向上取整为整数
+        #              例：50个时相文件 → 1.25 → 步长 2；41个文件 → 1.025 → 步长 2
+        #   说明：
+        #     1) 手动模式（manual）：初始阈值与步长均按上述规则自动计算，
+        #        前端传入的 initial_threshold / threshold_step 不再生效；
+        #     2) 自动模式（auto）：初始阈值仍由采样分析（_calculate_optimal_threshold）得出
+        #        （该函数本身返回整数），步长同样按 2.5% 规则自动计算；
+        #     3) 初始阈值与步长均必须为整数（小数位向上进位，1.1→2、2.5→3）。
+        if _file_count > 0:
+            if threshold_mode != 'auto':
+                initial_threshold = max(1, math.ceil(_file_count * 0.05))
+            threshold_step = max(1, math.ceil(_file_count * 0.025))
+            print(
+                f"[Pipeline] ★ 阈值按影像文件数自动计算: 影像文件数={_file_count}, "
+                f"初始阈值={initial_threshold} (5%×{_file_count} 向上取整), "
+                f"步长={threshold_step} (2.5%×{_file_count} 向上取整)",
+                flush=True,
+            )
+        else:
+            # 防御性兜底：无影像文件时步骤1本会失败，此处仅保证阈值不为 0/负数
+            if initial_threshold < 1:
+                initial_threshold = 1
+            threshold_step = max(1, math.ceil(threshold_step))
 
         for iteration in range(1, max_iterations + 1):
             round_label = f"第{iteration}轮"
@@ -1405,9 +1499,8 @@ async def _run_pipeline_background(
                     },
                 )
 
-            # ── 步骤 3：距离匹配（汉明/欧氏，消融实验2可选） ────────────────────────
-            _metric_label = "欧氏距离" if distance_metric == 'euclidean' else "汉明距离"
-            _iter_progress(3, f"开始{_metric_label}匹配...", 0)
+            # ── 步骤 3：汉明距离匹配 ────────────────────────
+            _iter_progress(3, f"开始汉明距离匹配...", 0)
 
             # 生成替换值：
             #   - 活跃类别：每轮自动生成新替换值（用全部类别数计算偏移，防止冻结后值冲突）
@@ -1426,20 +1519,18 @@ async def _run_pipeline_background(
             all_replacements = {**frozen_replacements, **active_replacements}
 
             # 每轮阈值自动递增：第1轮=initial_threshold，第2轮=+threshold_step，第3轮=+2*threshold_step，……
-            # 设置上限保护：汉明距离下阈值不超过实际序列长度（波段数），超过则几乎所有序列都会匹配；
-            # 欧氏距离（消融实验2）为连续距离值，量纲与波段数不同，不做波段数上限截断
             max_threshold = initial_threshold + (iteration - 1) * threshold_step
+            # 设置上限保护：阈值不超过实际序列长度（子波段总数），超过则几乎所有序列都会匹配
+            # ★ 复用循环外已计算的 seq_len（子波段总数），不再按文件数重新统计
+            # 欧氏距离（消融实验2）为连续距离值，量纲与波段数不同，不做波段数上限截断
             if distance_metric == 'euclidean':
                 current_threshold = max_threshold
                 # 输出文件名中的阈值格式化（避免浮点文件名过长）
                 _thr_str = f"{current_threshold:g}"
             else:
-                # 阈值上限永远用实际波段数，与 step4 的 max_sequence_length 过滤完全解耦
-                detected_bands = len([f for f in os.listdir(input_img_dir)
-                                      if f.lower().endswith(('.tif', '.tiff', '.img'))])
-                sequence_length_cap = detected_bands if detected_bands > 0 else 100
+                sequence_length_cap = seq_len if seq_len > 0 else 100
                 current_threshold = min(max_threshold, sequence_length_cap)
-                _thr_str = str(int(current_threshold))
+                _thr_str = f"{current_threshold:g}"
             step3_output_file = os.path.join(step3_out, f"out1_{_thr_str}.csv")
             single_round_config = [{
                 "threshold": current_threshold,
@@ -1460,6 +1551,7 @@ async def _run_pipeline_background(
                 execution_mode=execution_mode,
                 num_processes=num_processes,
                 distance_metric=distance_metric,
+                hamming_tolerance=hamming_tolerance,
             )
             round_stage_times["step3"] = round(time.time() - t3_start, 2)
 
@@ -1519,7 +1611,6 @@ async def _run_pipeline_background(
                     rounds=single_round_config,
                     execution_mode=execution_mode,
                     num_processes=num_processes,
-                    distance_metric=distance_metric,
                 )
                 round_stage_times["step3"] = round(time.time() - t3_start, 2)
 
@@ -1637,6 +1728,7 @@ async def _run_pipeline_background(
                 "round": iteration,
                 "hamming_threshold": current_threshold,   # 本轮实际使用的距离阈值（兼容旧字段名）
                 "distance_metric": distance_metric,        # 本轮使用的距离度量（hamming/euclidean，消融实验2）
+                "hamming_tolerance": hamming_tolerance,    # 本轮使用的汉明容差 ε（消融实验1配套）
                 "kappa": kappa,
                 "overall_accuracy": oa,
                 "unclassified_ratio": round(unclassified_ratio, 2),
@@ -1728,17 +1820,14 @@ async def _run_pipeline_background(
                 print(f"[Pipeline] 已恢复执行，进入第{iteration + 1}轮迭代", flush=True)
                 continue  # 进入下一轮迭代
 
-            # ── 类别冻结判断 ─────────────────────────────────
-            # 提取本轮各类别的 PA
-            class_acc_map = {
-                ca["class_name"]: ca["producer_accuracy"]
-                for ca in result6.get("class_accuracies", [])
-            }
-            newly_frozen = set()
-            # ── 冻结策略开关 ──
-            # enable_freeze=False（用户未勾选"启用类别冻结"）时，
-            # 整个运行期间不进行冻结判断，所有类别始终保持活跃
-            if enable_freeze:
+            # ── 类别冻结判断（固定轮次模式下禁用，保证跑满设定轮数）──
+            if not fixed_rounds:
+                # 提取本轮各类别的 PA
+                class_acc_map = {
+                    ca["class_name"]: ca["producer_accuracy"]
+                    for ca in result6.get("class_accuracies", [])
+                }
+                newly_frozen = set()
                 for c in classes_data:
                     name = c["name"]
                     if name in frozen_classes:
@@ -1750,13 +1839,17 @@ async def _run_pipeline_background(
                     class_pa_history[name].append(pa)
 
                     # 冻结策略：连续N轮PA增幅 < 0.5% 则冻结（N由用户设置）
+                    # ★ 关键修复：PA=0%的类别不应被冻结——这说明该类别尚未被有效匹配，
+                    # 冻结它只会让阈值停止增长，永远无法达到有效匹配。
+                    # 只有当PA > 0时才考虑冻结。
                     stop_gap      = 0.5                    # 固定增幅阈值（%）
                     consecutive_r = consecutive_rounds  # 用户可配置，默认3
 
                     history = class_pa_history[name]
                     # 过滤掉 None 值（步骤6未能计算该类的PA时）
                     valid_history = [h for h in history if h is not None]
-                    if len(valid_history) >= consecutive_r + 1:
+                    # ★ PA=0时不冻结：需要最近一次PA > 0才允许冻结判断
+                    if pa > 0 and len(valid_history) >= consecutive_r + 1:
                         # 取最近 consecutive_r 次增幅：用索引 -consecutive_r 到 -1
                         recent_improvements = [
                             valid_history[-(consecutive_r - i)] - valid_history[-(consecutive_r - i) - 1]
@@ -1772,29 +1865,32 @@ async def _run_pipeline_background(
                     round_record["newly_frozen"] = list(newly_frozen)
                     round_record["active_classes"] = list(active_classes)
 
-                # 如果所有类别都冻结，提前退出（仅在启用冻结策略时可能发生）
+                # 如果所有类别都冻结，提前退出
                 if not active_classes:
                     stop_reason = f"所有类别均已收敛，全流程结束"
                     round_record["stop_triggered"] = True
                     round_record["stop_reason"] = stop_reason
                     break
 
-            # ── 判断终止条件（级联判断：先Kappa，再未分类）──
-            if kappa >= kappa_threshold:
-                # 第一条件满足：Kappa达标 → 直接终止
-                stop_reason = f"Kappa={kappa:.4f} ≥ {kappa_threshold}，实验结束"
-                round_record["stop_triggered"] = True
-                round_record["stop_reason"] = stop_reason
-                break
-            elif unclassified_ratio < unclassified_threshold:
-                # 第一条件不满足，但第二条件满足：未分类比例达标 → 终止
-                stop_reason = f"Kappa={kappa:.4f}<{kappa_threshold}，但未分类={unclassified_ratio:.1f}% < {unclassified_threshold}%，实验结束"
-                round_record["stop_triggered"] = True
-                round_record["stop_reason"] = stop_reason
-                break
+                # ── 判断终止条件（级联判断：先Kappa，再未分类）──
+                if kappa >= kappa_threshold:
+                    # 第一条件满足：Kappa达标 → 直接终止
+                    stop_reason = f"Kappa={kappa:.4f} ≥ {kappa_threshold}，实验结束"
+                    round_record["stop_triggered"] = True
+                    round_record["stop_reason"] = stop_reason
+                    break
+                elif unclassified_ratio < unclassified_threshold:
+                    # 第一条件不满足，但第二条件满足：未分类比例达标 → 终止
+                    stop_reason = f"Kappa={kappa:.4f}<{kappa_threshold}，但未分类={unclassified_ratio:.1f}% < {unclassified_threshold}%，实验结束"
+                    round_record["stop_triggered"] = True
+                    round_record["stop_reason"] = stop_reason
+                    break
 
-            # 两个条件均不满足，通知继续
-            condition_msg = f"Kappa={kappa:.4f}<{kappa_threshold}，未分类={unclassified_ratio:.1f}%≥{unclassified_threshold}%"
+                # 两个条件均不满足，通知继续
+                condition_msg = f"Kappa={kappa:.4f}<{kappa_threshold}，未分类={unclassified_ratio:.1f}%≥{unclassified_threshold}%"
+            else:
+                # 固定轮次模式：不冻结、不提前终止，仅记录指标后继续下一轮
+                condition_msg = f"固定轮次模式（共{max_iterations}轮）：Kappa={kappa:.4f}，未分类={unclassified_ratio:.1f}%"
 
             task_manager.update_task(
                 task_id,
@@ -1813,7 +1909,11 @@ async def _run_pipeline_background(
 
         else:
             # for-else：达到最大轮次退出
-            stop_reason = f"已达最大迭代轮次 {max_iterations}，强制终止"
+            stop_reason = (
+                f"已跑满固定轮次 {max_iterations} 轮，实验结束"
+                if fixed_rounds
+                else f"已达最大迭代轮次 {max_iterations}，强制终止"
+            )
             if all_rounds_results:
                 all_rounds_results[-1]["stop_triggered"] = True
                 all_rounds_results[-1]["stop_reason"] = stop_reason
@@ -1830,7 +1930,9 @@ async def _run_pipeline_background(
             if total > 0:
                 timing["stage_times"][key] = round(total, 2)
 
-        report_path = _save_timing_report(output_dir, timing, stop_reason or "完成", final_round)
+        report_path = _save_timing_report(output_dir, timing, stop_reason or "完成", final_round,
+                                          distance_metric=distance_metric,
+                                          hamming_tolerance=hamming_tolerance)
         timing["report_file"] = report_path
 
         final_metrics = final_result6.get("metrics") if final_result6 else None
@@ -1904,8 +2006,10 @@ async def _run_pipeline_background(
             execution_mode=execution_mode,
             num_processes=num_processes,
             skip_discretization=skip_discretization,
+            normalize_continuous=normalize_continuous,
             distance_metric=distance_metric,
-            enable_freeze=enable_freeze,
+            zero_policy=zero_policy,
+            hamming_tolerance=hamming_tolerance,
         )
         return  # 递归完成后退出
 

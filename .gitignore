@@ -1,26 +1,29 @@
 # Python
 __pycache__/
 *.py[cod]
-*.egg-info/
-*.pyc
-.eggs/
-
-# Virtual environments
+*$py.class
 venv/
 .venv/
 env/
 
-# Runtime / temp
+# Runtime / temp outputs
 temp_classification/
 *.log
-*.tmp
+.last_backup_ts
+restore_request.json
+
+# Local safety backups (not source)
+_backup_*/
+*.bak_*
+*.lf_backup
+
+# GPU runtime caches
 .cuda_cache/
 .cupy_cache/
 
-# IDE
-.idea/
-.vscode/
+# Agent internal
+.workbuddy/
 
 # OS
 Thumbs.db
-.DS_Store
+Desktop.ini

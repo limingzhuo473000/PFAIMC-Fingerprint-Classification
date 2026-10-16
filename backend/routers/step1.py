@@ -38,13 +38,15 @@ class Step1Request(BaseModel):
     input_img_dir: str = Field(description="影像文件夹路径")
     output_dir: str = Field(description="输出目录路径")
     filename: str = Field(description="输出文件名（不含扩展名）")
-    num_classes: int = Field(default=5, ge=2, le=20, description="分位数分类数量")
+    num_classes: int = Field(default=5, ge=1, le=100, description="分位数分类数量（1-N可调）")
     delete_ranges: Optional[list[BandRange]] = Field(
         default=None,
         description="要删除的波段范围列表"
     )
     adjust_sizes: bool = Field(default=True, description="是否自动调整不同尺寸的CSV文件")
-    skip_discretization: bool = Field(default=False, description="消融实验1：跳过分位数离散化，直接合并零值处理后的数值文件")
+    skip_discretization: bool = Field(default=False, description="消融实验1：跳过分位数离散化，直接合并零值处理后的连续数值文件")
+    normalize_continuous: bool = Field(default=False, description="消融实验1配套：连续数值模式下逐波段 z-score 标准化（消除波段间量级差）")
+    zero_policy: str = Field(default="include", description="分位数统计中 0 值（NoData/背景）的处理策略：include=0 参与统计（默认，与 92.66% 历史实验口径一致）/ exclude=排除（只取 >0 的值参与分位数统计）/ auto=自动择优")
 
 
 class Step1Response(BaseModel):
@@ -69,6 +71,8 @@ async def run_step1_api(request: Step1Request, background_tasks: BackgroundTasks
     - num_classes: 分位数分类数量（默认5）
     - delete_ranges: 要删除的波段范围（可选）
     - adjust_sizes: 是否调整不同尺寸的CSV文件（默认True）
+    - skip_discretization: 消融实验1 — 跳过分位数离散化（默认False）
+    - normalize_continuous: 消融实验1配套 — 逐波段 z-score 标准化（默认False）
     """
     # 验证路径
     if not os.path.exists(request.input_img_dir):
@@ -96,6 +100,8 @@ async def run_step1_api(request: Step1Request, background_tasks: BackgroundTasks
         delete_ranges,
         request.adjust_sizes,
         request.skip_discretization,
+        request.normalize_continuous,
+        request.zero_policy,
     )
 
     return Step1Response(
@@ -113,6 +119,8 @@ async def _run_step1_background(
     delete_ranges: list | None,
     adjust_sizes: bool,
     skip_discretization: bool = False,
+    normalize_continuous: bool = False,
+    zero_policy: str = "include",
 ):
     """后台执行步骤1的实际逻辑"""
     try:
@@ -135,6 +143,8 @@ async def _run_step1_background(
             delete_ranges=delete_ranges,
             adjust_sizes=adjust_sizes,
             skip_discretization=skip_discretization,
+            normalize_continuous=normalize_continuous,
+            zero_policy=zero_policy,
         )
 
         if result["success"]:

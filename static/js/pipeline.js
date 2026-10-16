@@ -43,7 +43,7 @@ async function loadReplacementPreview() {
         const data = await API.post('/pipeline/preview-replacements', {
             input_img_dir: tifFolder,
             shp_input: shpInput,
-            num_rounds: parseInt(document.getElementById('pipeline-max-iterations')?.value) || 5,
+            num_rounds: parseInt(document.getElementById('pipeline-max-iterations')?.value) || 25,
             experiment_data_path: experimentDataPath,
         });
 
@@ -191,6 +191,8 @@ let pipelinePreviewRounds = [];
 
 // 心跳计时器ID（浏览器关闭自动停止）
 let _heartbeatIntervalId = null;
+// 心跳 Worker（★ 后台标签页防误暂停，见 _startHeartbeat 注释）
+let _heartbeatWorker = null;
 
 // ============================================
 // 浏览器关闭自动停止
@@ -206,6 +208,37 @@ window.addEventListener('beforeunload', () => {
 
 function _startHeartbeat(taskId) {
     _stopHeartbeat();  // 确保没有重复的
+    const heartbeatUrl = `${AppConfig.api.baseUrl}/tasks/${taskId}/heartbeat`;
+    // ★ 2026-09-19 修复误暂停：Chrome/Edge 对后台标签页的 setInterval 有节流
+    //   （隐藏约5分钟后最低 1 次/分钟），心跳间隔被拉长到 60s > 后端 30s 超时，
+    //   导致"页面明明开着，切到别的标签页一会儿任务就被自动暂停"。
+    //   改用 Web Worker 发心跳——Worker 内的定时器不受后台节流影响。
+    try {
+        const workerCode = `
+            let tid = null;
+            self.onmessage = (e) => {
+                if (e.data.type === 'start') {
+                    tid = setInterval(() => {
+                        fetch(e.data.url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: '{}',
+                        }).catch(() => {});
+                    }, 10000);
+                } else if (e.data.type === 'stop') {
+                    if (tid) clearInterval(tid);
+                    self.close();
+                }
+            };
+        `;
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        _heartbeatWorker = new Worker(URL.createObjectURL(blob));
+        _heartbeatWorker.postMessage({ type: 'start', url: heartbeatUrl });
+        return;
+    } catch (err) {
+        // Worker 创建失败（老浏览器等）→ 降级为原来的页面内定时器
+        console.warn('心跳Worker创建失败，降级为页面内定时器:', err);
+    }
     // 每 10 秒发一次心跳，后端 30s 无心跳自动暂停
     _heartbeatIntervalId = setInterval(() => {
         if (!currentTaskId) {
@@ -213,7 +246,7 @@ function _startHeartbeat(taskId) {
             return;
         }
         // fire-and-forget，不阻塞轮询
-        fetch(`${AppConfig.api.baseUrl}/tasks/${taskId}/heartbeat`, {
+        fetch(heartbeatUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({}),
@@ -222,6 +255,11 @@ function _startHeartbeat(taskId) {
 }
 
 function _stopHeartbeat() {
+    if (_heartbeatWorker) {
+        try { _heartbeatWorker.postMessage({ type: 'stop' }); } catch (e) {}
+        _heartbeatWorker.terminate();
+        _heartbeatWorker = null;
+    }
     if (_heartbeatIntervalId) {
         clearInterval(_heartbeatIntervalId);
         _heartbeatIntervalId = null;
@@ -463,17 +501,14 @@ function collectPipelineParams() {
     }
 
     // 汉明距离阈值模式与参数
+    // ★ 2026-09-09 起：初始阈值/步长由后端按影像文件数自动计算（初始=文件数×5%，步长=文件数×2.5%），
+    //   前端不再提供输入框，此处仅发送占位值保持接口兼容（后端会覆盖）。
     const thresholdModeEl = document.querySelector('#pipeline-threshold-mode .radio-option.active');
     const thresholdMode = thresholdModeEl ? thresholdModeEl.dataset.value : 'auto';
-    const initialThresholdEl = document.getElementById('pipeline-initial-threshold');
-    const initialThreshold = initialThresholdEl ? parseFloat(initialThresholdEl.value) || 15 : 15;
-    const thresholdStepEl = document.getElementById('pipeline-threshold-step');
-    const thresholdStepManual = thresholdStepEl ? parseFloat(thresholdStepEl.value) || 5 : 5;
-    const thresholdStepAutoEl = document.getElementById('pipeline-threshold-step-auto');
-    const thresholdStepAuto = thresholdStepAutoEl ? parseFloat(thresholdStepAutoEl.value) || 5 : 5;
+    const initialThreshold = 15;  // 占位，后端自动覆盖为 影像文件数×5%
+    const thresholdStep = 5;      // 占位，后端自动覆盖为 影像文件数×2.5%
     const autoSamplesEl = document.getElementById('pipeline-auto-samples');
     const autoSamples = autoSamplesEl ? parseInt(autoSamplesEl.value) || 2000 : 2000;
-    const thresholdStep = thresholdMode === 'manual' ? thresholdStepManual : thresholdStepAuto;
 
     // 消融实验2：距离度量（hamming/euclidean）
     const distanceMetric = document.querySelector('#pipeline-distance-metric .radio-option.active')?.dataset.value || 'hamming';
@@ -483,6 +518,7 @@ function collectPipelineParams() {
     const unclThreshEl     = document.getElementById('pipeline-unclassified-threshold');
     const maxIterEl        = document.getElementById('pipeline-max-iterations');
     const consecRoundsEl   = document.getElementById('pipeline-consecutive-rounds');
+    const fixedRoundsEl    = document.getElementById('pipeline-fixed-rounds');
     const filenameEl       = document.getElementById('pipeline-filename');
     const numClassesEl     = document.getElementById('pipeline-num-classes');
     const maxSeqEl         = document.getElementById('pipeline-max-seq-length');
@@ -513,18 +549,21 @@ function collectPipelineParams() {
         output_dir:              outputDir,
         filename:                filename,
         num_classes:             parseInt(numClassesEl?.value || '5'),
-        skip_discretization:     getChecked('pipeline-skip-discretization'),  // 消融实验1：跳过离散化
         delete_ranges:           deleteRanges,
         adjust_sizes:            getChecked('pipeline-adjust-sizes'),
+        skip_discretization:     getChecked('pipeline-skip-discretization'),  // 消融实验1：跳过离散化
+        normalize_continuous:    getChecked('pipeline-normalize-continuous'), // 消融实验1配套：逐波段标准化
+        zero_policy:           getZeroPolicy('pipeline'), // 零值开关：含0=include / 排除0=exclude / 自动=auto
         shp_input:               get('pipeline-shp-input'),
         tif_folder:              inputImgDir,   // 自动复用基础影像文件夹
         target_file:             targetFile,    // 自动推导
         existing_step1_csv:      existingStep1Csv || null,  // 已有步骤1结果，有值则跳过步骤1
         threshold_mode:          thresholdMode,             // 阈值模式：manual/auto
-        initial_threshold:       initialThreshold,          // 初始距离阈值（手动模式下生效）
+        initial_threshold:       initialThreshold,          // 汉明距离初始阈值（手动模式下生效）
         threshold_step:          thresholdStep,             // 每轮阈值递增步长
         auto_threshold_samples:  autoSamples,             // 自动阈值采样像素数
         distance_metric:         distanceMetric,           // 消融实验2：hamming/euclidean
+        hamming_tolerance:       parseFloat(document.getElementById('pipeline-hamming-tolerance')?.value || '0') || 0,  // 消融实验1配套：汉明容差 ε
         execution_mode:          execMode,
         num_processes:           numProcesses,   // 进程数，0=自动
         add_geo:                 getChecked('pipeline-add-geo'),
@@ -533,22 +572,10 @@ function collectPipelineParams() {
         shp_folder:              get('pipeline-shp-folder'),
         kappa_threshold:         kappaThreshEl     ? parseFloat(kappaThreshEl.value)  || 0.8  : 0.8,
         unclassified_threshold:  unclThreshEl      ? parseFloat(unclThreshEl.value)   || 10.0 : 10.0,
-        max_iterations:          maxIterEl         ? parseInt(maxIterEl.value)         || 10   : 10,
+        max_iterations:          maxIterEl         ? parseInt(maxIterEl.value)         || 25   : 25,
+        fixed_rounds:            fixedRoundsEl     ? fixedRoundsEl.checked             : true,   // 固定轮次：保证跑满 max_iterations 轮
         consecutive_rounds:      consecRoundsEl    ? parseInt(consecRoundsEl.value)    || 3    : 3,
-        enable_freeze:           getChecked('pipeline-enable-freeze'),  // 类别冻结策略开关（默认开启）
     };
-}
-
-// ============================================
-// 冻结策略开关切换
-// ============================================
-function toggleFreezeOption() {
-    const enabled = document.getElementById('pipeline-enable-freeze')?.checked;
-    const roundsInput = document.getElementById('pipeline-consecutive-rounds');
-    if (roundsInput) {
-        roundsInput.disabled = !enabled;   // 未启用冻结时，冻结轮次设置不可用
-        roundsInput.style.opacity = enabled ? '' : '0.5';
-    }
 }
 
 // ============================================
@@ -572,6 +599,19 @@ async function runPipeline() {
 
     const params = collectPipelineParams();
     if (!params) return;
+
+    // ── 消融实验安全校验：跳过离散化 + 汉明距离 是数学上不可能命中的组合 ──
+    if (params.skip_discretization && params.distance_metric === 'hamming') {
+        const ok = confirm(
+            '⚠️ 组合告警：已勾选「跳过离散化」，但距离度量仍是「汉明距离」。\n\n' +
+            '去离散化后指纹为连续浮点序列，汉明距离按位判断“不相等”，' +
+            '任意两序列的距离几乎恒等于序列长度，任何阈值下都不会命中，' +
+            '结果必然是全部未分类、OA/Kappa = 0。\n\n' +
+            '是否仍要继续？（仅当你刻意留证该组合失效时选择“确定”）'
+        );
+        if (!ok) return;
+        _appendLog('warn', '⚠️ 强制使用「跳过离散化 + 汉明距离」组合，预期匹配数为 0');
+    }
 
     pipelineRunning = true;
     pipelinePaused = false;
@@ -650,7 +690,10 @@ async function pausePipeline() {
 }
 
 async function resumePipeline() {
-    if (!currentTaskId) return;
+    if (!currentTaskId) {
+        alert('未找到当前任务，页面可能已刷新或服务端已重启，请重新启动全流程。');
+        return;
+    }
     try {
         await API.post(`/tasks/${currentTaskId}/resume`, {});
         pipelinePaused = false;
@@ -660,7 +703,14 @@ async function resumePipeline() {
         _updatePipelineButtons('running');
         _pollPipelineStatus(currentTaskId);
     } catch (err) {
-        alert(`恢复失败: ${err.message}`);
+        const msg = err.message || '';
+        if (msg.includes('Task not found')) {
+            alert('恢复失败：后端找不到该任务，可能是因为服务端重启导致任务丢失。\n请刷新页面后重新启动全流程。');
+        } else if (msg.includes('not paused')) {
+            alert('恢复失败：任务当前不处于暂停状态，可能已完成或失败。\n请刷新页面查看最新状态。');
+        } else {
+            alert(`恢复失败: ${err.message}`);
+        }
     }
 }
 
@@ -2052,6 +2102,43 @@ function _escapeHtml(str) {
         .replace(/"/g, '&quot;');
 }
 
+/**
+ * 消融实验1：跳过离散化开关联动
+ * 【严格控制变量】勾选后只改变"是否离散化"这一个变量：
+ *   ① 不自动勾选「逐波段标准化 z-score」——z-score 是第二个变量，
+ *      严格单变量对照时不应引入（需要时用户手动勾选）；
+ *   ② 距离度量尊重用户选择，不强制切欧氏——若保留汉明（严格逐位相等判定），
+ *      距离恒≈序列长度、预期 OA≈0，属消融留证组合，启动时另有弹窗二次确认。
+ */
+function onSkipDiscretizationChange(el) {
+    const warn = document.getElementById('skip-discretization-warning');
+    if (el.checked) {
+        if (warn) warn.style.display = 'block';
+        // 仅提示、不自动勾选：保证消融实验"唯一变量 = 离散化"
+        const norm = document.getElementById('pipeline-normalize-continuous');
+        if (norm && !norm.checked) {
+            _appendLog('info', '提示：连续数值如需 z-score 标准化请手动勾选「逐波段标准化」；'
+                + '默认不勾选，以保证消融实验的单变量对照（唯一变量=离散化）'
+                + '（若启用 ε-容差汉明，ε 的单位为标准差，需先做标准化才有意义）');
+        }
+        // ε=0 时自动填建议值 0.5σ，避免严格汉明导致零匹配（可手动改回 0 做失效留证）
+        const tolEl = document.getElementById('pipeline-hamming-tolerance');
+        if (tolEl && (!tolEl.value || parseFloat(tolEl.value) === 0)) {
+            tolEl.value = '0.5';
+            _appendLog('warn', '已勾选「跳过离散化」，汉明容差 ε 自动预设为 0.5'
+                + '（ε=0 时距离恒=序列长度，必然零匹配；做失效留证请手动改回 0）');
+        }
+        // 距离度量尊重用户选择，不再强制切换：
+        // 若保留汉明（严格逐位相等），距离恒≈序列长度、预期 OA≈0（消融留证组合），
+        // 启动时「消融实验安全校验」会弹窗二次确认。
+    } else {
+        if (warn) warn.style.display = 'none';
+        // 取消跳过离散化时把 ε 归零（离散编码下容差无意义）
+        const tolEl = document.getElementById('pipeline-hamming-tolerance');
+        if (tolEl) tolEl.value = '0';
+    }
+}
+
 // ============================================
 // 导出全局
 // ============================================
@@ -2070,5 +2157,6 @@ window.openLogModal               = openLogModal;
 window.closeLogModal              = closeLogModal;
 window.clearPipelineLogs          = clearPipelineLogs;
 window.setExecMode                = setExecMode;
+window.onSkipDiscretizationChange = onSkipDiscretizationChange;
 window.updateNumProcessesDisplay  = updateNumProcessesDisplay;
 window.checkGPUStatus             = checkGPUStatus;

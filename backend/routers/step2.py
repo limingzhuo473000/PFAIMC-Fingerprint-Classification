@@ -9,10 +9,11 @@ import traceback
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from backend.core.task_manager import task_manager, TaskStatus
+from backend.core.path_utils import normalize_request_paths
 from scripts.process02 import run_step2
 
 router = APIRouter()
@@ -23,6 +24,11 @@ class Step2Request(BaseModel):
     tif_folder: str
     experiment_data_path: str
     output_dir: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_path_slashes(cls, data):
+        return normalize_request_paths(data)
 
 
 @router.post("/run")

@@ -503,7 +503,24 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">分类数量</label>
-                            <input type="number" class="form-input" id="step1-num-classes" value="5" min="2" max="20">
+                            <input type="number" class="form-input" id="step1-num-classes" value="5" min="1" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">分位数统计 · 零值处理</label>
+                            <div class="zero-switch-row">
+                                <label class="switch">
+                                    <input type="checkbox" id="step1-zero-switch" checked
+                                           onchange="onZeroSwitchChange('step1')">
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <span class="switch-text" id="step1-zero-switch-text">含 0 值（0 参与分位数统计）</span>
+                                <label class="zero-auto-label">
+                                    <input type="checkbox" id="step1-zero-auto"
+                                           onchange="onZeroAutoChange('step1')">
+                                    自动择优
+                                </label>
+                            </div>
+                            <p class="form-hint" id="step1-zero-hint">0 值即 NoData/背景。<b>开关打开 = 含 0 值</b>：0 一并计入分位数统计，等级严格等分，背景自然独占等级 1 —— 与 92.66% 历史高精度实验口径一致。实测（124036 全时相 2 级离散）：评价样本 98.17%；实验样本_7月版 含0 = 95.71% vs 排除0 = 89.91%（<b>+5.80pp</b>）。注意：指数波段（NDBI/NDWI 等）的 0 与负值是合法观测值而非背景，此时开关应保持打开。</p>
                         </div>
                     </div>
 
@@ -542,8 +559,14 @@
                     </div>
                     <div class="form-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="step1-skip-discretization">
+                            <input type="checkbox" id="step1-skip-discretization" onchange="onStep1SkipDiscretizationChange(this)">
                             跳过离散化（消融实验1：不进行分位数离散化，直接合并数值文件）
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="step1-normalize-continuous">
+                            逐波段标准化 z-score（消融实验1配套：消除反射率与指数波段量级差，仅跳过离散化时有意义）
                         </label>
                     </div>
 
@@ -826,6 +849,12 @@
                             </label>
                         </div>
                         <p class="form-hint">汉明模式阈值按整数位差数设置；欧氏模式阈值支持小数（连续距离值）</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">汉明距离容差 ε</label>
+                        <input type="number" id="step3-hamming-tolerance" class="form-input" value="0" min="0" max="1000" step="0.05" style="width: 140px;">
+                        <p class="form-hint">ε=0 为严格逐位相等（经典汉明）；ε&gt;0 时 |参考值-像元值|≤ε 视为该波段相等。用于跳过离散化后的连续数值序列（建议先标准化，ε 单位即标准差）</p>
                     </div>
 
                     <div class="form-group">
@@ -1289,7 +1318,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">分位数类别数</label>
-                                <input type="number" id="pipeline-num-classes" class="form-input" value="5" min="2" max="20">
+                                <input type="number" id="pipeline-num-classes" class="form-input" value="5" min="1" max="100">
                             </div>
                         </div>
                         <div class="form-group">
@@ -1300,9 +1329,38 @@
                         <!-- 消融实验1：跳过离散化 -->
                         <div class="form-group">
                             <label class="form-label">
-                                <input type="checkbox" id="pipeline-skip-discretization"> 跳过离散化（消融实验1：不进行分位数离散化，直接合并数值文件）
+                                <input type="checkbox" id="pipeline-skip-discretization" onchange="onSkipDiscretizationChange(this)"> 跳过离散化（消融实验1：不进行分位数离散化，直接合并数值文件）
                             </label>
                             <p class="form-hint">🔬 勾选后步骤1将跳过五级分位数离散化，直接合并零值处理后的连续数值；后续匹配在连续数值序列上进行</p>
+                            <p class="form-hint" id="skip-discretization-warning" style="display:none; color:#d93025; font-weight:600;">
+                                ⚠️ 已自动勾选「逐波段标准化」。距离度量保持你的当前选择：选欧氏可直接匹配连续值；若保留汉明距离（严格逐位相等判定），距离恒≈序列长度，任何阈值下都不会命中，预期 OA 接近 0（实测 124036 为 0.92%，可用于消融实验留证），启动时会弹窗二次确认。
+                            </p>
+                        </div>
+                        <!-- 消融实验1配套：连续数值标准化 -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="pipeline-normalize-continuous"> 逐波段标准化 z-score（消融实验1配套）
+                            </label>
+                            <p class="form-hint">🔬 仅当勾选「跳过离散化」时有意义：反射率波段量级约 10⁴、归一化指数波段仅 -1~1，
+                                不做标准化时距离计算会被反射率完全主导。逐波段 z-score 后各波段权重相当，消融结论更严谨。</p>
+                        </div>
+                        <!-- 分位数统计 零值开关 -->
+                        <div class="form-group">
+                            <label class="form-label">分位数统计 · 零值处理</label>
+                            <div class="zero-switch-row">
+                                <label class="switch">
+                                    <input type="checkbox" id="pipeline-zero-switch" checked
+                                           onchange="onZeroSwitchChange('pipeline')">
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <span class="switch-text" id="pipeline-zero-switch-text">含 0 值（0 参与分位数统计）</span>
+                                <label class="zero-auto-label">
+                                    <input type="checkbox" id="pipeline-zero-auto"
+                                           onchange="onZeroAutoChange('pipeline')">
+                                    自动择优
+                                </label>
+                            </div>
+                            <p class="form-hint" id="pipeline-zero-hint">🔬 0 值即 NoData/背景。<b>开关打开 = 含 0 值</b>：0 一并计入分位数统计，等级严格等分，背景自然独占等级 1 —— 与 92.66% 历史高精度实验口径一致。实测（124036 全时相 2 级离散）：评价样本 98.17%；实验样本_7月版 含0 = 95.71% vs 排除0 = 89.91%（<b>+5.80pp</b>）。注意：指数波段（NDBI/NDWI 等）的 0 与负值是合法观测值而非背景，此时开关应保持打开。判定依据会写入 step1/merged.csv.meta.json。</p>
                         </div>
 
                         <!-- 已有步骤1结果（可选，填写后跳过步骤1） -->
@@ -1457,6 +1515,13 @@
                             <p class="form-hint">🔬 汉明距离=位级匹配（默认）；欧氏距离=连续数值距离匹配（消融实验对比项）。选择欧氏距离时阈值语义为连续距离值，建议配合自动阈值模式</p>
                         </div>
 
+                        <!-- 消融实验1配套：汉明距离容差 ε -->
+                        <div class="form-group" id="pipeline-hamming-tol-group">
+                            <label class="form-label">汉明距离容差 ε（配合跳过离散化）</label>
+                            <input type="number" id="pipeline-hamming-tolerance" class="form-input" value="0" min="0" max="1000" step="0.05" style="width: 140px;">
+                            <p class="form-hint">🔬 ε=0 为严格逐位相等（经典汉明）。勾选「跳过离散化」后序列为连续浮点值，必须设 ε&gt;0，否则距离恒等于序列长度、必然零匹配。输入做过逐波段标准化时 ε 单位为标准差，建议 0.25~1.5（实测最优 0.5）</p>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">汉明距离阈值模式</label>
                             <div class="radio-group" id="pipeline-threshold-mode">
@@ -1475,19 +1540,12 @@
                         <!-- 手动模式设置 -->
                         <div id="threshold-manual-settings" style="display:none; margin-left:1rem;">
                             <div class="form-group" style="margin-bottom:0.75rem;">
-                                <label class="form-label">初始阈值</label>
-                                <div style="display:flex; align-items:center; gap:0.75rem;">
-                                    <input type="number" id="pipeline-initial-threshold" class="form-input"
-                                        value="15" min="0" step="any" style="width:120px;">
-                                    <span style="color:var(--text-muted); font-size:0.85rem;">每轮自动 +<span id="threshold-step-display">5</span></span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">递增步长</label>
-                                <input type="number" id="pipeline-threshold-step" class="form-input"
-                                    value="5" min="0.1" max="200" step="any" style="width:120px;"
-                                    oninput="document.getElementById('threshold-step-display').textContent = this.value || '5'">
-                                <p class="form-hint">每轮阈值增加量（默认5；欧氏距离模式下可设小数）</p>
+                                <label class="form-label">初始阈值（自动计算）</label>
+                                <p class="form-hint">
+                                    初始阈值 = <b>影像文件数 × 5%</b>，每轮递增步长 = <b>影像文件数 × 2.5%</b>（均向上取整为整数），
+                                    系统按所选影像文件夹自动计算，无需手动输入。<br>
+                                    例：50个时相文件 → 初始阈值 3（2.5 向上进位），步长 2（1.25 向上进位；第1轮 3，第2轮 5，第3轮 7 …）
+                                </p>
                             </div>
                         </div>
 
@@ -1500,10 +1558,11 @@
                                 <p class="form-hint">用于分析数据特征的采样像素数量（越多越精确）</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">递增步长</label>
-                                <input type="number" id="pipeline-threshold-step-auto" class="form-input"
-                                    value="5" min="0.1" max="200" step="any" style="width:120px;">
-                                <p class="form-hint">自动阈值确定后，每轮增加的步长（欧氏距离模式下可设小数）</p>
+                                <label class="form-label">递增步长（自动计算）</label>
+                                <p class="form-hint">
+                                    步长 = <b>影像文件数 × 2.5%</b>，系统自动计算并向上取整为整数（例：50个时相文件 → 1.25 → 步长 2）。
+                                    初始阈值由采样分析自动确定。
+                                </p>
                             </div>
                         </div>
 
@@ -1590,7 +1649,7 @@
                         </div>
                         <p class="form-hint" style="margin-top:0.5rem;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="display:inline;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            冻结策略（可选）：启用后每类连续 N 轮 PA 增幅 &lt; 0.5% 时自动冻结，冻结后该类保持固定替换值；未启用则整个运行期间不进行冻结
+                            冻结策略（全局固定）：每类连续 2 轮 PA 增幅 &lt; 0.5% 时自动冻结
                         </p>
                     </div>
 
@@ -1621,41 +1680,41 @@
                             迭代控制 · 终止条件
                         </div>
                         <p class="form-hint" style="margin-bottom:1rem;">
-                            步骤3-6 循环迭代，每轮完成精度评价后依次判断：① Kappa≥阈值 ② 未分类&lt;阈值 ③ 类别连续N轮增幅&lt;0.5%→冻结（启用冻结时） ④ 达到最大轮次→终止
+                            步骤3-6 循环迭代。<b>固定轮次模式（默认开启）</b>：忽略所有提前终止条件，保证跑满设定轮次（默认 25 轮）。关闭后按每轮精度评价依次判断：① Kappa≥阈值 ② 未分类&lt;阈值 ③ 类别连续N轮增幅&lt;0.5%→冻结 ④ 达到最大轮次→终止
                         </p>
-                        <div class="form-group" style="margin-bottom:1rem;">
+                        <div class="form-group">
                             <label class="form-label">
-                                <input type="checkbox" id="pipeline-enable-freeze" checked onchange="toggleFreezeOption()"> 启用类别冻结（不勾选则整个运行期间不进行冻结，所有类别始终保持活跃）
+                                <input type="checkbox" id="pipeline-fixed-rounds" checked> 固定轮次模式（保证每次跑满设定轮数）
                             </label>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">Kappa 终止阈值</label>
+                                <label class="form-label">Kappa 终止阈值 <span class="text-muted text-sm">（固定轮次模式下不生效）</span></label>
                                 <input type="number" id="pipeline-kappa-threshold"
                                        class="form-input" value="0.8" min="0" max="1" step="0.01"
                                        placeholder="0.80">
                                 <p class="form-hint">默认 0.80</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">未分类像素比例阈值（%）</label>
+                                <label class="form-label">未分类像素比例阈值（%） <span class="text-muted text-sm">（固定轮次模式下不生效）</span></label>
                                 <input type="number" id="pipeline-unclassified-threshold"
                                        class="form-input" value="10" min="0" max="100" step="0.5"
                                        placeholder="10.0">
                                 <p class="form-hint">默认 10%</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">最大迭代轮次</label>
+                                <label class="form-label">迭代轮次（固定轮次模式下必跑满）</label>
                                 <input type="number" id="pipeline-max-iterations"
-                                       class="form-input" value="10" min="1" max="50" step="1"
-                                       placeholder="10">
-                                <p class="form-hint">默认 10</p>
+                                       class="form-input" value="25" min="1" max="50" step="1"
+                                       placeholder="25">
+                                <p class="form-hint">默认 25</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">冻结连续轮次 <span class="text-muted text-sm">（PA增幅&lt;0.5%触发）</span></label>
+                                <label class="form-label">冻结连续轮次 <span class="text-muted text-sm">（PA增幅&lt;0.5%触发，固定轮次模式下不生效）</span></label>
                                 <input type="number" id="pipeline-consecutive-rounds"
                                        class="form-input" value="3" min="1" max="10" step="1"
                                        placeholder="3">
-                                <p class="form-hint">默认 3（仅启用类别冻结时生效）</p>
+                                <p class="form-hint">默认 3</p>
                             </div>
                         </div>
                     </div>
@@ -1692,7 +1751,7 @@
                             <thead>
                                 <tr>
                                     <th>轮次</th>
-                                    <th>距离阈值</th>
+                                    <th>汉明阈值</th>
                                     <th>Kappa 系数</th>
                                     <th>总体精度 OA</th>
                                     <th>未分类像素比例</th>
@@ -1934,6 +1993,49 @@
     #log-modal-body::-webkit-scrollbar-thumb { background:var(--border-color,#444); border-radius:3px; }
     /* 点击模态框背景关闭 */
     #log-modal { cursor:default; }
+
+    /* ══ 零值开关（Toggle Switch）══ */
+    .zero-switch-row {
+        display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+        padding:4px 0 2px;
+    }
+    .switch {
+        position:relative; display:inline-block;
+        width:46px; height:25px; flex:0 0 auto; cursor:pointer;
+    }
+    .switch input { opacity:0; width:0; height:0; position:absolute; }
+    .switch-slider {
+        position:absolute; inset:0;
+        background:#c9cdd6; border-radius:25px;
+        transition:background .22s ease;
+    }
+    .switch-slider::before {
+        content:""; position:absolute;
+        height:19px; width:19px; left:3px; top:3px;
+        background:#fff; border-radius:50%;
+        box-shadow:0 1px 3px rgba(0,0,0,.22);
+        transition:transform .22s ease;
+    }
+    .switch input:checked + .switch-slider { background:#1f8a4c; }
+    .switch input:checked + .switch-slider::before { transform:translateX(21px); }
+    .switch input:disabled + .switch-slider { opacity:.45; cursor:not-allowed; }
+    .switch input:focus-visible + .switch-slider {
+        outline:2px solid var(--accent-color,#3b82f6); outline-offset:2px;
+    }
+    .switch-text {
+        font-size:.875rem; font-weight:600; color:#1f8a4c;
+        transition:color .22s ease; min-width:230px;
+    }
+    .switch-text.off { color:#b8860b; }
+    .switch-text.auto { color:#2c6fbb; }
+    .zero-auto-label {
+        display:inline-flex; align-items:center; gap:5px;
+        font-size:.8125rem; color:var(--text-muted,#666);
+        cursor:pointer; margin-left:auto; user-select:none;
+        padding:3px 9px; border-radius:5px;
+        border:1px solid var(--border-color,#e3e6ec);
+    }
+    .zero-auto-label:hover { border-color:var(--accent-color,#3b82f6); }
     </style>
     <script>
     // 点击背景关闭模态框

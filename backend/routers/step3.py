@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 class RoundConfig(BaseModel):
-    threshold: float = Field(ge=0)
+    threshold: int = Field(ge=0)
     replacements: dict[str, str]
 
 
@@ -31,19 +31,20 @@ class Step3Request(BaseModel):
     match_order: list[str]
     rounds: list[RoundConfig]
     distance_metric: str = Field(default='hamming', description="消融实验2：距离度量，'hamming'=汉明距离（默认），'euclidean'=欧氏距离匹配")
+    hamming_tolerance: float = Field(default=0.0, ge=0.0, le=1000.0, description="消融实验1配套：汉明距离容差 ε。0=严格逐位相等（经典汉明）；>0 时 |ref-current|<=ε 视为该波段相等")
 
 
 @router.post("/run")
 async def run_step3_api(request: Step3Request, background_tasks: BackgroundTasks):
-    """运行步骤3：多轮距离匹配（汉明/欧氏，消融实验2可选）"""
+    """运行步骤3：多轮距离匹配（汉明 / ε-容差汉明 / 欧氏）"""
+    if request.distance_metric not in ('hamming', 'euclidean'):
+        raise HTTPException(status_code=400, detail=f"不支持的距离度量: {request.distance_metric}（可选 'hamming' 或 'euclidean'）")
     if not os.path.exists(request.images_folder):
         raise HTTPException(status_code=400, detail=f"影像文件夹不存在: {request.images_folder}")
     if not os.path.exists(request.samples_folder):
         raise HTTPException(status_code=400, detail=f"样本文件夹不存在: {request.samples_folder}")
     if not os.path.exists(request.target_file):
         raise HTTPException(status_code=400, detail=f"目标文件不存在: {request.target_file}")
-    if request.distance_metric not in ('hamming', 'euclidean'):
-        raise HTTPException(status_code=400, detail=f"不支持的距离度量: {request.distance_metric}（可选 'hamming' 或 'euclidean'）")
 
     task_id = task_manager.create_task()
 
@@ -63,6 +64,7 @@ async def run_step3_api(request: Step3Request, background_tasks: BackgroundTasks
         request.match_order,
         rounds_config,
         request.distance_metric,
+        request.hamming_tolerance,
     )
 
     return {"task_id": task_id, "message": "步骤3任务已创建，正在后台执行"}
@@ -77,6 +79,7 @@ async def _run_step3_background(
     match_order: list[str],
     rounds: list[dict],
     distance_metric: str = 'hamming',
+    hamming_tolerance: float = 0.0,
 ):
     try:
         task_manager.update_task(task_id, status=TaskStatus.RUNNING, message="开始匹配...", progress=5)
@@ -92,6 +95,7 @@ async def _run_step3_background(
             match_order=match_order,
             rounds=rounds,
             distance_metric=distance_metric,
+            hamming_tolerance=hamming_tolerance,
         )
 
         if result["success"]:
